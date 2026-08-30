@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>INDUS · Connexion</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <div class="container" style="max-width:480px; margin-top:8vh">
+
+    <div style="text-align:center; margin-bottom:24px">
+      <div class="logo" style="width:56px;height:56px;font-size:28px;border-radius:14px;
+           display:inline-flex;align-items:center;justify-content:center;
+           background:linear-gradient(135deg,var(--primary),var(--accent))">⚡</div>
+      <h1 style="font-size:24px;margin-top:12px">INDUS · Monitoring</h1>
+      <p class="text-muted" style="font-size:13px">Suivi des utilités et postes de garde</p>
+    </div>
+
+    <!-- ===== Onglets Connexion / Nouveau compte ===== -->
+    <div class="tabs" style="justify-content:center">
+      <button class="tab active" id="tab-login" onclick="switchTab('login')">Se connecter</button>
+      <button class="tab" id="tab-signup" onclick="switchTab('signup')">Nouveau compte</button>
+    </div>
+
+    <!-- ===== Formulaire : CONNEXION ===== -->
+    <div class="card" id="panel-login">
+      <div class="form-group">
+        <label for="login-tech">Technicien</label>
+        <select id="login-tech">
+          <option value="">Chargement…</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="login-matricule">Matricule</label>
+        <input type="text" id="login-matricule" placeholder="Votre matricule" />
+      </div>
+      <div id="login-error" class="alert alert-critical hidden"></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doLogin()">
+        Accéder au monitoring
+      </button>
+    </div>
+
+    <!-- ===== Formulaire : NOUVEAU COMPTE ===== -->
+    <div class="card hidden" id="panel-signup">
+      <div class="form-group">
+        <label for="signup-first">Prénom</label>
+        <input type="text" id="signup-first" placeholder="Prénom" />
+      </div>
+      <div class="form-group">
+        <label for="signup-last">Nom</label>
+        <input type="text" id="signup-last" placeholder="Nom" />
+      </div>
+      <div class="form-group">
+        <label for="signup-matricule">Matricule</label>
+        <input type="text" id="signup-matricule" placeholder="Matricule" />
+      </div>
+      <div id="signup-error" class="alert alert-critical hidden"></div>
+      <div id="signup-success" class="alert alert-info hidden">
+        Compte créé ! Un administrateur doit l'activer avant connexion.
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doSignup()">
+        Créer mon compte
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/utilities.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // --- Déjà connecté ? → dashboard ---
+    if (getSession()) window.location.href = "dashboard.html";
+
+    // --- Onglets ---
+    function switchTab(which) {
+      document.getElementById("panel-login").classList.toggle("hidden", which !== "login");
+      document.getElementById("panel-signup").classList.toggle("hidden", which !== "signup");
+      document.getElementById("tab-login").classList.toggle("active", which === "login");
+      document.getElementById("tab-signup").classList.toggle("active", which === "signup");
+    }
+
+    // --- Charger les techniciens actifs ---
+    async function loadTechnicians() {
+      const select = document.getElementById("login-tech");
+      const { data, error } = await db
+        .from("technicians")
+        .select("id, first_name, last_name, matricule, role, is_active")
+        .eq("is_active", true)
+        .order("first_name");
+
+      if (error || !data || data.length === 0) {
+        select.innerHTML = '<option value="">Aucun technicien trouvé</option>';
+        return;
+      }
+      select.innerHTML = '<option value="">— Sélectionner —</option>' +
+        data.map(t =>
+          `<option value='JSON.stringify(t)′>{JSON.stringify(t)}'>JSON.stringify(t)′>{t.first_name} t.lastname({t.last_name} (t.lastn​ame({t.matricule})</option>`
+        ).join("");
+    }
+    loadTechnicians();
+
+    // --- Connexion ---
+    async function doLogin() {
+      const errBox = document.getElementById("login-error");
+      errBox.classList.add("hidden");
+
+      const raw = document.getElementById("login-tech").value;
+      const matricule = document.getElementById("login-matricule").value.trim();
+
+      if (!raw) return showError(errBox, "Sélectionnez un technicien.");
+      if (!matricule) return showError(errBox, "Entrez votre matricule.");
+
+      const tech = JSON.parse(raw);
+
+      if (tech.matricule !== matricule) {
+        return showError(errBox, "Matricule incorrect.");
+      }
+
+      // Vérifier en base que le compte est toujours actif
+      const { data: fresh, error } = await db
+        .from("technicians")
+        .select("id, first_name, last_name, matricule, role, is_active")
+        .eq("id", tech.id)
+        .single();
+
+      if (error || !fresh) return showError(errBox, "Erreur de connexion à la base.");
+      if (!fresh.is_active) return showError(errBox, "Ce compte est désactivé.");
+
+      setSession({
+        id: fresh.id,
+        first_name: fresh.first_name,
+        last_name: fresh.last_name,
+        matricule: fresh.matricule,
+        role: fresh.role
+      });
+      window.location.href = "dashboard.html";
+    }
+
+    // --- Nouveau compte ---
+    async function doSignup() {
+      const errBox = document.getElementById("signup-error");
+      const okBox = document.getElementById("signup-success");
+      errBox.classList.add("hidden");
+      okBox.classList.add("hidden");
+
+      const first = document.getElementById("signup-first").value.trim();
+      const last = document.getElementById("signup-last").value.trim();
+      const matricule = document.getElementById("signup-matricule").value.trim();
+
+      if (!first || !last) return showError(errBox, "Entrez votre prénom et votre nom.");
+      if (!matricule) return showError(errBox, "Entrez votre matricule.");
+
+      // Matricule déjà utilisé ?
+      const { data: existing } = await db
+        .from("technicians")
+        .select("id")
+        .eq("matricule", matricule);
+
+      if (existing && existing.length > 0) {
+        return showError(errBox, "Ce matricule existe déjà.");
+      }
+
+      const { error } = await db.from("technicians").insert({
+        first_name: first,
+        last_name: last,
+        matricule: matricule,
+        role: "technician",
+        is_active: false
+      });
+
+      if (error) return showError(errBox, "Erreur : " + error.message);
+
+      okBox.classList.remove("hidden");
+      document.getElementById("signup-first").value = "";
+      document.getElementById("signup-last").value = "";
+      document.getElementById("signup-matricule").value = "";
+    }
+
+    // --- Erreur ---
+    function showError(box, msg) {
+      box.textContent = msg;
+      box.classList.remove("hidden");
+    }
+
+    // Entrée = valider
+    document.getElementById("login-matricule").addEventListener("keydown", e => {
+      if (e.key === "Enter") doLogin();
+    });
+  </script>
+</body>
+</html>
