@@ -1,146 +1,1116 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>INDUS · Monitoring</title>
-  <link rel="stylesheet" href="css/styles.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Utilités - Check-list</title>
+
+<style>
+:root {
+    --bg: #0f172a;
+    --sidebar: #111827;
+    --card: #1e293b;
+    --card-light: #273449;
+    --primary: #2563eb;
+    --success: #16a34a;
+    --warning: #f59e0b;
+    --danger: #dc2626;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --border: #334155;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+}
+
+/* LOGIN / HEADER */
+
+.topbar {
+    height: 70px;
+    background: var(--sidebar);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 25px;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 100;
+}
+
+.logo {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.logo span {
+    color: #38bdf8;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.badge {
+    background: var(--primary);
+    padding: 7px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+}
+
+/* SIDEBAR */
+
+.sidebar {
+    position: fixed;
+    top: 70px;
+    left: 0;
+    width: 260px;
+    height: calc(100vh - 70px);
+    background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    padding: 20px 12px;
+    overflow-y: auto;
+}
+
+.menu-title {
+    font-size: 11px;
+    color: var(--muted);
+    margin: 15px 10px 8px;
+    text-transform: uppercase;
+}
+
+.menu-item {
+    padding: 13px 15px;
+    margin-bottom: 5px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #cbd5e1;
+    transition: 0.2s;
+}
+
+.menu-item:hover {
+    background: var(--card);
+}
+
+.menu-item.active {
+    background: var(--primary);
+    color: white;
+}
+
+/* CONTENT */
+
+.main {
+    margin-left: 260px;
+    margin-top: 70px;
+    padding: 30px;
+    min-height: calc(100vh - 70px);
+}
+
+.page-header {
+    margin-bottom: 25px;
+}
+
+.page-header h1 {
+    font-size: 28px;
+}
+
+.page-header p {
+    color: var(--muted);
+    margin-top: 7px;
+}
+
+/* TOP CONTROLS */
+
+.controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.control-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 18px;
+    border-radius: 12px;
+}
+
+.control-card label {
+    display: block;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 8px;
+}
+
+select,
+input,
+textarea {
+    width: 100%;
+    background: #0f172a;
+    border: 1px solid var(--border);
+    color: white;
+    padding: 11px;
+    border-radius: 7px;
+    font-size: 14px;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: #38bdf8;
+}
+
+/* DASHBOARD */
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 18px;
+}
+
+.dashboard-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 22px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-3px);
+    border-color: #38bdf8;
+}
+
+.dashboard-icon {
+    font-size: 32px;
+    margin-bottom: 15px;
+}
+
+.dashboard-card h3 {
+    margin-bottom: 8px;
+}
+
+.dashboard-card p {
+    font-size: 13px;
+    color: var(--muted);
+}
+
+/* FORM */
+
+.checklist {
+    display: none;
+}
+
+.checklist.active {
+    display: block;
+}
+
+.section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.section-header {
+    padding: 16px 20px;
+    background: var(--card-light);
+    font-size: 17px;
+    font-weight: bold;
+}
+
+.section-body {
+    padding: 20px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 7px;
+    color: #cbd5e1;
+}
+
+.range-info {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 5px;
+}
+
+.status {
+    font-size: 12px;
+    margin-top: 6px;
+    font-weight: bold;
+}
+
+.status.ok {
+    color: #22c55e;
+}
+
+.status.error {
+    color: #ef4444;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* RADIO */
+
+.radio-group {
+    display: flex;
+    gap: 10px;
+}
+
+.radio-option {
+    flex: 1;
+}
+
+.radio-option input {
+    display: none;
+}
+
+.radio-option label {
+    display: block;
+    padding: 11px;
+    text-align: center;
+    background: #0f172a;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+.radio-option input:checked + label {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+/* BUTTON */
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin: 25px 0;
+}
+
+.btn {
+    padding: 12px 22px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-secondary {
+    background: #475569;
+    color: white;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-success {
+    background: var(--success);
+    color: white;
+}
+
+/* ALERT */
+
+.alert {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: none;
+}
+
+.alert.show {
+    display: block;
+}
+
+.alert.warning {
+    background: rgba(245,158,11,0.15);
+    border: 1px solid var(--warning);
+    color: #fbbf24;
+}
+
+/* MOBILE */
+
+@media(max-width: 900px) {
+
+    .sidebar {
+        width: 70px;
+    }
+
+    .sidebar .menu-item {
+        font-size: 0;
+        text-align: center;
+    }
+
+    .sidebar .menu-item::first-letter {
+        font-size: 20px;
+    }
+
+    .menu-title {
+        display: none;
+    }
+
+    .main {
+        margin-left: 70px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media(max-width: 600px) {
+
+    .sidebar {
+        display: none;
+    }
+
+    .main {
+        margin-left: 0;
+        padding: 15px;
+    }
+
+    .topbar {
+        padding: 0 15px;
+    }
+
+    .controls,
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .user-info span {
+        display: none;
+    }
+}
+</style>
 </head>
+
 <body>
 
-  <div class="container">
-    <!-- ===== En-tête ===== -->
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
-      <h1 style="font-size:20px">⚡ INDUS · Monitoring</h1>
-      <div style="display:flex; align-items:center; gap:12px">
-        <span id="user-label" class="text-muted" style="font-size:13px"></span>
-        <button class="btn" onclick="logout()">Déconnexion</button>
-      </div>
+<header class="topbar">
+
+    <div class="logo">
+        ⚙️ <span>UTILITIES</span> CONTROL
     </div>
 
-    <div id="dash-error" class="alert alert-critical hidden"></div>
-
-    <!-- ===== Utilités ===== -->
-    <div class="card">
-      <h2 style="font-size:15px; margin-bottom:12px">📌 Utilités — saisie des mesures</h2>
-      <div id="utilities-list"></div>
-      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="saveAll()">
-        💾 Enregistrer toutes les mesures
-      </button>
+    <div class="user-info">
+        <span>👤 Technicien</span>
+        <div class="badge" id="badge-poste">Poste : —</div>
+        <button class="btn btn-secondary" style="padding:8px 14px" onclick="logout()">Déconnexion</button>
     </div>
 
-    <!-- ===== Postes de garde ===== -->
-    <div class="card">
-      <h2 style="font-size:15px; margin-bottom:12px">🌙 Postes de garde</h2>
-      <div id="guards-list"></div>
-  </div>
-      <div id="admin-zone" class="hidden" style="margin-top:12px; border-top:1px solid var(--border); padding-top:12px">
-        <h3 style="font-size:13px; margin-bottom:8px">Ajouter un poste (admin)</h3>
-        <div style="display:flex; gap:8px">
-          <input type="text" id="guard-name" placeholder="Nom du poste" style="flex:1" />
-          <button class="btn" onclick="addGuard()">➕ Ajouter</button>
+</header>
+
+
+<aside class="sidebar">
+
+    <div class="menu-title">Navigation</div>
+
+    <div class="menu-item active" onclick="showDashboard()">
+        🏠 Tableau de bord
+    </div>
+
+    <div class="menu-title">Check-lists</div>
+
+    <div class="menu-item" onclick="openChecklist('water')">
+        💧 Traitement d'eau
+    </div>
+
+    <div class="menu-item">
+        🔥 Eau surchauffée
+    </div>
+
+    <div class="menu-item">
+        ♨️ Chaudière vapeur
+    </div>
+
+    <div class="menu-item">
+        🔧 Pompe à vide
+    </div>
+
+    <div class="menu-item">
+        💨 Compresseurs
+    </div>
+
+    <div class="menu-item">
+        ❄️ Eau glacée
+    </div>
+
+    <div class="menu-item">
+        🌡️ Thermoventilation
+    </div>
+
+    <div class="menu-item">
+        ⚡ Groupes électrogènes
+    </div>
+
+    <div class="menu-item">
+        💧 Station d'osmose
+    </div>
+
+    <div class="menu-title">Administration</div>
+
+    <div class="menu-item">
+        📊 Historique
+    </div>
+
+    <div class="menu-item">
+        ⚠️ Anomalies
+    </div>
+
+</aside>
+
+
+<main class="main">
+
+<!-- DASHBOARD -->
+
+<div id="dashboard">
+
+    <div class="page-header">
+        <h1>Tableau de bord</h1>
+        <p>Système de suivi des utilités et check-lists</p>
+    </div>
+
+
+    <div class="controls">
+
+        <div class="control-card">
+            <label>Technicien</label>
+            <input type="text" id="technicien" readonly>
         </div>
-      </div>
+
+        <div class="control-card">
+            <label>Poste</label>
+            <select id="poste" onchange="updatePoste()">
+                <option value="">Sélectionner le poste</option>
+                <option value="matin">🌅 Matin</option>
+                <option value="apres-midi">☀️ Après-midi</option>
+                <option value="nuit">🌙 Nuit</option>
+            </select>
+        </div>
+
+        <div class="control-card">
+            <label>Date</label>
+            <input type="date" id="date">
+        </div>
+
     </div>
-  </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="js/config.js"></script>
-  <script src="js/utilities.js"></script>
-  <script src="js/auth.js"></script>
-  <script>
-    const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // --- Protection : pas de session → retour login ---
-    const session = getSession();
-    if (!session) window.location.href = "index.html";
+    <div class="dashboard-grid">
 
-    document.getElementById("user-label").textContent =
-      session.first_name + " " + session.last_name + " (" + session.matricule + ")";
+        <div class="dashboard-card" onclick="openChecklist('water')">
+            <div class="dashboard-icon">💧</div>
+            <h3>Salle de traitement d'eau</h3>
+            <p>Pompes, filtres, UV, adoucisseurs et compteurs.</p>
+        </div>
 
-    // --- Afficher la zone admin si admin ---
-    if (session.role === "admin") document.getElementById("admin-zone").classList.remove("hidden");
+        <div class="dashboard-card">
+            <div class="dashboard-icon">🔥</div>
+            <h3>Eau surchauffée</h3>
+            <p>Pression, température et dosage chimique.</p>
+        </div>
 
-    // --- Charger les utilités ---
-    async function loadUtilities() {
-      const box = document.getElementById("utilities-list");
-      const { data, error } = await db.from("utilities").select("*").order("id");
+        <div class="dashboard-card">
+            <div class="dashboard-icon">♨️</div>
+            <h3>Chaudière vapeur</h3>
+            <p>Pression, purge et niveau d'eau.</p>
+        </div>
 
-      if (error) return showError("Erreur chargement utilités : " + error.message);
-      if (!data || data.length === 0) {
-        box.innerHTML = '<p class="text-muted">Aucune utilité en base.</p>';
+        <div class="dashboard-card">
+            <div class="dashboard-icon">🔧</div>
+            <h3>Pompe à vide</h3>
+            <p>Pression et fonctionnement des pompes.</p>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="dashboard-icon">💨</div>
+            <h3>Compresseurs d'air</h3>
+            <p>Températures et compteurs d'entretien.</p>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="dashboard-icon">❄️</div>
+            <h3>Eau glacée</h3>
+            <p>Trane, Chiller absorption et York.</p>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="dashboard-icon">🌡️</div>
+            <h3>Thermoventilation</h3>
+            <p>Filtres et turbines.</p>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="dashboard-icon">⚡</div>
+            <h3>Groupes électrogènes</h3>
+            <p>Température, charge et huile.</p>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="dashboard-icon">💧</div>
+            <h3>Station d'osmose</h3>
+            <p>Production, rejet et pressions.</p>
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- CHECKLIST TRAITEMENT D'EAU -->
+
+<div id="waterChecklist" class="checklist">
+
+    <div class="page-header">
+        <h1>💧 Salle de traitement d'eau</h1>
+        <p>Check-list de contrôle des équipements</p>
+    </div>
+
+
+    <div class="alert warning" id="nightAlert">
+        🌙 Certains champs sont disponibles uniquement au poste de nuit.
+    </div>
+
+
+    <!-- COMPTEURS -->
+
+    <div class="section night-only hidden">
+
+        <div class="section-header">
+            📊 Relevé des compteurs
+        </div>
+
+        <div class="section-body">
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label>Compteur R1</label>
+                    <input type="number" id="cpt_R1">
+                </div>
+
+                <div class="form-group">
+                    <label>Compteur R2</label>
+                    <input type="number" id="cpt_R2">
+                </div>
+
+                <div class="form-group">
+                    <label>Compteur Général</label>
+                    <input type="number" id="cpt_general">
+                </div>
+
+                <div class="form-group">
+                    <label>Compteur Vestiaires</label>
+                    <input type="number" id="cpt_vestiaires">
+                </div>
+
+                <div class="form-group">
+                    <label>Compteur Process</label>
+                    <input type="number" id="cpt_process">
+                </div>
+
+                <div class="form-group">
+                    <label>Compteur Adoucisseur</label>
+                    <input type="number" id="cpt_adoucisseur">
+                </div>
+
+                <div class="form-group">
+                    <label>Compteur Lave-moule</label>
+                    <input type="number" id="cpt_lavemoule">
+                </div>
+
+                <div class="form-group">
+                    <label>Compteur BVM + TF</label>
+                    <input type="number" id="cpt_bvm_tf">
+                </div>
+
+                <div class="form-group">
+                    <label>Compteur SMT</label>
+                    <input type="number" id="cpt_smt">
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- POMPES -->
+
+    <div class="section">
+
+        <div class="section-header">
+            🔧 Pompes
+        </div>
+
+        <div class="section-body">
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label>Pompe Master Active</label>
+
+                    <div class="radio-group">
+
+                        <div class="radio-option">
+                            <input type="radio" name="master" id="p1" value="Pompe 1">
+                            <label for="p1">Pompe 1</label>
+                        </div>
+
+                        <div class="radio-option">
+                            <input type="radio" name="master" id="p2" value="Pompe 2">
+                            <label for="p2">Pompe 2</label>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>Pression Pompe 1 (bar)</label>
+
+                    <input
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        id="pressionP1"
+                        oninput="checkRange('pressionP1',5,6,'statusP1')">
+
+                    <div class="range-info">
+                        Plage normale : 5 – 6 bar
+                    </div>
+
+                    <div id="statusP1" class="status"></div>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>Pression Pompe 2 (bar)</label>
+
+                    <input
+                        type="number"
+                        step="0.1"
+                        id="pressionP2"
+                        oninput="checkRange('pressionP2',5,6,'statusP2')">
+
+                    <div class="range-info">
+                        Plage normale : 5 – 6 bar
+                    </div>
+
+                    <div id="statusP2" class="status"></div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- FILTRES -->
+
+    <div class="section">
+
+        <div class="section-header">
+            🔵 Filtres et Collecteurs
+        </div>
+
+        <div class="section-body">
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label>Pression Filtre Quartz 1</label>
+                    <input type="number" step="0.1" id="filtre_quartz1">
+                    <div class="range-info">Normal : 5 – 6 bar</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Pression Filtre Quartz 2</label>
+                    <input type="number" step="0.1" id="filtre_quartz2">
+                    <div class="range-info">Normal : 5 – 6 bar</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Pression Filtre PVC 1</label>
+                    <input type="number" step="0.1" id="filtre_pvc1">
+                    <div class="range-info">Normal : 4 – 5 bar</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Pression Collecteur Eau Filtrée</label>
+                    <input type="number" step="0.1" id="collect_filtrée">
+                    <div class="range-info">Normal : 4 – 5 bar</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Pression Collecteur Eau Adoucie</label>
+                    <input type="number" step="0.1" id="collect_adoucie">
+                    <div class="range-info">Normal : 4 – 5 bar</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Pression Filtre Inox</label>
+                    <input type="number" step="0.1" id="filtre_inox">
+                    <div class="range-info">Normal : 4 – 5 bar</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Pression Filtre PVC 2</label>
+                    <input type="number" step="0.1" id="filtre_pvc2">
+                    <div class="range-info">Normal : 4 – 5 bar</div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- UV -->
+
+    <div class="section">
+
+        <div class="section-header">
+            💡 Système UV
+        </div>
+
+        <div class="section-body">
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label>Nombre de lampes actives UV1</label>
+
+                    <select id="uv1_lampes">
+                        <option value="">Sélectionner</option>
+                        <option>0</option>
+                        <option>1</option>
+                        <option>2</option>
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>Pourcentage UV2</label>
+
+                    <input
+                        type="number"
+                        id="uv2"
+                        oninput="checkRange('uv2',95,100,'statusUV2')">
+
+                    <div class="range-info">
+                        Minimum : 95 %
+                    </div>
+
+                    <div id="statusUV2" class="status"></div>
+
+                </div>
+
+
+                <div class="form-group">
+                    <label>Nombre d'heures UV2</label>
+                    <input type="number" id="uv2_heures">
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>Pourcentage UV3</label>
+
+                    <input
+                        type="number"
+                        id="uv3"
+                        oninput="checkRange('uv3',95,100,'statusUV3')">
+
+                    <div class="range-info">
+                        Minimum : 95 %
+                    </div>
+
+                    <div id="statusUV3" class="status"></div>
+
+                </div>
+
+
+                <div class="form-group">
+                    <label>Nombre d'heures UV3</label>
+                    <input type="number" id="uv3_heures">
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ADOUCISSEUR -->
+
+    <div class="section">
+
+        <div class="section-header">
+            🧪 Adoucisseur
+        </div>
+
+        <div class="section-body">
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label>Adoucisseur actif</label>
+
+                    <select id="adoucisseur_actif">
+                        <option value="">Sélectionner</option>
+                        <option>Adoucisseur 1</option>
+                        <option>Adoucisseur 2</option>
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>Compteur de régénération</label>
+
+                    <input type="number" id="adoucisseur_regen">
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- COMMENTAIRE -->
+
+    <div class="section">
+
+        <div class="section-header">
+            📝 Commentaire
+        </div>
+
+        <div class="section-body">
+
+            <textarea
+                rows="5"
+                id="commentaire"
+                placeholder="Ajouter un commentaire ou signaler une anomalie...">
+            </textarea>
+
+        </div>
+
+    </div>
+
+
+    <div class="actions">
+
+        <button class="btn btn-secondary" onclick="showDashboard()">
+            Annuler
+        </button>
+
+        <button class="btn btn-success" onclick="saveChecklist()">
+            💾 Enregistrer
+        </button>
+
+    </div>
+
+</div>
+
+</main>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script>
+
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// --- PROTECTION : pas de session → retour login ---
+const session = getSession();
+if (!session) window.location.href = "index.html";
+
+// --- Afficher le technicien connecté ---
+document.querySelector(".user-info span").textContent =
+    "👤 " + session.first_name + " " + session.last_name;
+
+document.getElementById("technicien").value =
+    session.first_name + " " + session.last_name;
+
+// --- Date automatique ---
+document.getElementById("date").value =
+    new Date().toISOString().split("T")[0];
+
+
+/* AFFICHER DASHBOARD */
+
+function showDashboard() {
+    document.getElementById("dashboard").style.display = "block";
+    document.getElementById("waterChecklist").classList.remove("active");
+}
+
+
+/* OUVRIR CHECKLIST */
+
+function openChecklist(name) {
+    document.getElementById("dashboard").style.display = "none";
+    if (name === "water") {
+        document.getElementById("waterChecklist").classList.add("active");
+        updatePoste();
+    }
+}
+
+
+/* GESTION POSTE */
+
+function updatePoste() {
+    const poste = document.getElementById("poste").value;
+    const nightElements = document.querySelectorAll(".night-only");
+    const alertBox = document.getElementById("nightAlert");
+
+    nightElements.forEach(element => {
+        if (poste === "nuit") {
+            element.classList.remove("hidden");
+        } else {
+            element.classList.add("hidden");
+        }
+    });
+
+    if (poste && poste !== "nuit") {
+        alertBox.classList.add("show");
+    } else {
+        alertBox.classList.remove("show");
+    }
+
+    const badge = document.getElementById("badge-poste");
+    if (poste === "nuit") badge.textContent = "Poste : 🌙 Nuit";
+    else if (poste === "matin") badge.textContent = "Poste : 🌅 Matin";
+    else if (poste === "apres-midi") badge.textContent = "Poste : ☀️ Après-midi";
+    else badge.textContent = "Poste : —";
+}
+
+
+/* CONTROLE MIN MAX */
+
+function checkRange(inputId, min, max, statusId) {
+    const value = parseFloat(document.getElementById(inputId).value);
+    const status = document.getElementById(statusId);
+
+    if (isNaN(value)) {
+        status.innerHTML = "";
         return;
-      }
-
-      let html = "";
-      for (const u of data) {
-        html += `
-          <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px">
-            <span style="flex:1">${u.name}</span>
-            <input type="number" step="any" id="util-${u.id}" placeholder="Valeur" style="width:110px" />
-            <span class="text-muted" style="width:30px">${u.unit || ""}</span>
-          </div>`;
-      }
-      box.innerHTML = html;
     }
 
-    // --- Sauvegarder toutes les mesures ---
-    async function saveAll() {
-      const errBox = document.getElementById("dash-error");
-      errBox.classList.add("hidden");
-
-      const inputs = document.querySelectorAll('[id^="util-"]');
-      for (const input of inputs) {
-        const utilId = input.id.replace("util-", "");
-        if (input.value === "") continue;
-
-        const { error } = await db.from("measurements").insert({
-          utility_id: utilId,
-          technician_id: session.id,
-          value: parseFloat(input.value)
-        });
-
-        if (error) return showError("Erreur enregistrement : " + error.message);
-      }
-      alert("✅ Mesures enregistrées !");
+    if (value >= min && value <= max) {
+        status.innerHTML = "🟢 Conforme";
+        status.className = "status ok";
+    } else {
+        status.innerHTML = "🔴 Hors limite";
+        status.className = "status error";
     }
+}
 
-    // --- Charger les postes de garde ---
-    async function loadGuards() {
-      const box = document.getElementById("guards-list");
-      const { data, error } = await db.from("guard_posts").select("*").order("name");
 
-      if (error) return showError("Erreur chargement postes : " + error.message);
-      if (!data || data.length === 0) {
-        box.innerHTML = '<p class="text-muted">Aucun poste de garde.</p>';
+/* ENREGISTREMENT VERS SUPABASE */
+
+async function saveChecklist() {
+    const poste = document.getElementById("poste").value;
+
+    if (!poste) {
+        alert("Veuillez sélectionner le poste.");
         return;
-      }
-
-      let html = "";
-      for (const g of data) {
-        html += `<div style="margin-bottom:6px">• ${g.name}</div>`;
-      }
-      box.innerHTML = html;
     }
 
-    // --- Ajouter un poste (admin) ---
-    async function addGuard() {
-      const name = document.getElementById("guard-name").value.trim();
-      if (!name) return alert("Entrez un nom de poste.");
-      const { error } = await db.from("guard_posts").insert({ name: name });
-      if (error) return alert("Erreur : " + error.message);
-      document.getElementById("guard-name").value = "";
-      loadGuards();
+    // Récupérer toutes les valeurs numériques saisies (champs avec id)
+    const values = {};
+    document.querySelectorAll("#waterChecklist input[type=number]").forEach(inp => {
+        if (inp.id && inp.value !== "") {
+            values[inp.id] = parseFloat(inp.value);
+        }
+    });
+
+    // Champs texte / select
+    if (document.getElementById("uv1_lampes").value) {
+        values.uv1_lampes = document.getElementById("uv1_lampes").value;
+    }
+    if (document.getElementById("adoucisseur_actif").value) {
+        values.adoucisseur_actif = document.getElementById("adoucisseur_actif").value;
+    }
+    if (document.getElementById("commentaire").value.trim()) {
+        values.commentaire = document.getElementById("commentaire").value;
     }
 
-    function showError(msg) {
-      const box = document.getElementById("dash-error");
-      box.textContent = msg;
-      box.classList.remove("hidden");
+    // Pompe master active (radio)
+    const master = document.querySelector('input[name="master"]:checked');
+    if (master) values.pompe_master = master.value;
+
+    const { error } = await db.from("measurements").insert({
+        technician_id: session.id,
+        utility_id: null,
+        value: values.cpt_general || 0,
+        data: values,
+        poste: poste,
+        recorded_at: document.getElementById("date").value
+    });
+
+    if (error) {
+        alert("Erreur enregistrement : " + error.message);
+        return;
     }
 
-    loadUtilities();
-    loadGuards();
-  </script>
+    alert("✅ Check-list enregistrée avec succès !");
+}
+
+</script>
+
 </body>
 </html>
