@@ -99,9 +99,11 @@
         select.innerHTML = '<option value="">Aucun technicien trouvé</option>';
         return;
       }
+
+      // ✅ CORRIGÉ : chaque option = l'ID du technicien
       select.innerHTML = '<option value="">— Sélectionner —</option>' +
         data.map(t =>
-          `<option value='JSON.stringify(t)′>{JSON.stringify(t)}'>JSON.stringify(t)′>{t.first_name} t.lastname({t.last_name} (t.lastn​ame({t.matricule})</option>`
+          `<option value="t.id">{t.id}">t.id">{t.first_name} t.lastname({t.last_name} (t.lastn​ame({t.matricule})</option>`
         ).join("");
     }
     loadTechnicians();
@@ -111,27 +113,22 @@
       const errBox = document.getElementById("login-error");
       errBox.classList.add("hidden");
 
-      const raw = document.getElementById("login-tech").value;
+      const techId = document.getElementById("login-tech").value;
       const matricule = document.getElementById("login-matricule").value.trim();
 
-      if (!raw) return showError(errBox, "Sélectionnez un technicien.");
+      if (!techId) return showError(errBox, "Sélectionnez un technicien.");
       if (!matricule) return showError(errBox, "Entrez votre matricule.");
 
-      const tech = JSON.parse(raw);
-
-      if (tech.matricule !== matricule) {
-        return showError(errBox, "Matricule incorrect.");
-      }
-
-      // Vérifier en base que le compte est toujours actif
+      // Vérifier en base que le compte existe et est actif
       const { data: fresh, error } = await db
         .from("technicians")
         .select("id, first_name, last_name, matricule, role, is_active")
-        .eq("id", tech.id)
+        .eq("id", techId)
         .single();
 
       if (error || !fresh) return showError(errBox, "Erreur de connexion à la base.");
       if (!fresh.is_active) return showError(errBox, "Ce compte est désactivé.");
+      if (fresh.matricule !== matricule) return showError(errBox, "Matricule incorrect.");
 
       setSession({
         id: fresh.id,
