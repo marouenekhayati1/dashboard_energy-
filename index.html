@@ -86,7 +86,7 @@
       document.getElementById("tab-signup").classList.toggle("active", which === "signup");
     }
 
-    // --- Charger les techniciens actifs ---
+      // --- Charger les techniciens actifs ---
     async function loadTechnicians() {
       const select = document.getElementById("login-tech");
       const { data, error } = await db
@@ -100,13 +100,14 @@
         return;
       }
 
-      // ✅ CORRIGÉ : chaque option = l'ID du technicien
-      select.innerHTML = '<option value="">— Sélectionner —</option>' +
-        data.map(t =>
-          `<option value="t.id">{t.id}">t.id">{t.first_name} t.lastname({t.last_name} (t.lastn​ame({t.matricule})</option>`
-        ).join("");
+      var options = '<option value="">— Sélectionner —</option>';
+      for (var i = 0; i < data.length; i++) {
+        var t = data[i];
+        options += '<option value="' + t.id + '">' + t.first_name + ' ' + t.last_name + ' (' + t.matricule + ')</option>';
+      }
+      select.innerHTML = options;
     }
-    loadTechnicians();
+
 
     // --- Connexion ---
     async function doLogin() {
