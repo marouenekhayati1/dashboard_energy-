@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>INDUS · Monitoring</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <div class="container">
+    <!-- ===== En-tête ===== -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
+      <h1 style="font-size:20px">⚡ INDUS · Monitoring</h1>
+      <div style="display:flex; align-items:center; gap:12px">
+        <span id="user-label" class="text-muted" style="font-size:13px"></span>
+        <button class="btn" onclick="logout()">Déconnexion</button>
+      </div>
+    </div>
+
+    <div id="dash-error" class="alert alert-critical hidden"></div>
+
+    <!-- ===== Utilités ===== -->
+    <div class="card">
+      <h2 style="font-size:15px; margin-bottom:12px">📌 Utilités — saisie des mesures</h2>
+      <div id="utilities-list"></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="saveAll()">
+        💾 Enregistrer toutes les mesures
+      </button>
+    </div>
+
+    <!-- ===== Postes de garde ===== -->
+    <div class="card">
+      <h2 style="font-size:15px; margin-bottom:12px">🌙 Postes de garde</h2>
+      <div id="guards-list"></div>
+ボ
+      <div id="admin-zone" class="hidden" style="margin-top:12px; border-top:1px solid var(--border); padding-top:12px">
+        <h3 style="font-size:13px; margin-bottom:8px">Ajouter un poste (admin)</h3>
+        <div style="display:flex; gap:8px">
+          <input type="text" id="guard-name" placeholder="Nom du poste" style="flex:1" />
+          <button class="btn" onclick="addGuard()">➕ Ajouter</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/utilities.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // --- Protection : pas de session → retour login ---
+    const session = getSession();
+    if (!session) window.location.href = "index.html";
+
+    document.getElementById("user-label").textContent =
+      session.first_name + " " + session.last_name + " (" + session.matricule + ")";
+
+    // --- Afficher la zone admin si admin ---
+    if (session.role === "admin") document.getElementById("admin-zone").classList.remove("hidden");
+
+    // --- Charger les utilités ---
+    async function loadUtilities() {
+      const box = document.getElementById("utilities-list");
+      const { data, error } = await db.from("utilities").select("*").order("id");
+
+      if (error) return showError("Erreur chargement utilités : " + error.message);
+      if (!data || data.length === 0) {
+        box.innerHTML = '<p class="text-muted">Aucune utilité en base.</p>';
+        return;
+      }
+
+      let html = "";
+      for (const u of data) {
+        html += `
+          <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px">
+            <span style="flex:1">${u.name}</span>
+            <input type="number" step="any" id="util-${u.id}" placeholder="Valeur" style="width:110px" />
+            <span class="text-muted" style="width:30px">${u.unit || ""}</span>
+          </div>`;
+      }
+      box.innerHTML = html;
+    }
+
+    // --- Sauvegarder toutes les mesures ---
+    async function saveAll() {
+      const errBox = document.getElementById("dash-error");
+      errBox.classList.add("hidden");
+
+      const inputs = document.querySelectorAll('[id^="util-"]');
+      for (const input of inputs) {
+        const utilId = input.id.replace("util-", "");
+        if (input.value === "") continue;
+
+        const { error } = await db.from("measurements").insert({
+          utility_id: utilId,
+          technician_id: session.id,
+          value: parseFloat(input.value)
+        });
+
+        if (error) return showError("Erreur enregistrement : " + error.message);
+      }
+      alert("✅ Mesures enregistrées !");
+    }
+
+    // --- Charger les postes de garde ---
+    async function loadGuards() {
+      const box = document.getElementById("guards-list");
+      const { data, error } = await db.from("guard_posts").select("*").order("name");
+
+      if (error) return showError("Erreur chargement postes : " + error.message);
+      if (!data || data.length === 0) {
+        box.innerHTML = '<p class="text-muted">Aucun poste de garde.</p>';
+        return;
+      }
+
+      let html = "";
+      for (const g of data) {
+        html += `<div style="margin-bottom:6px">• ${g.name}</div>`;
+      }
+      box.innerHTML = html;
+    }
+
+    // --- Ajouter un poste (admin) ---
+    async function addGuard() {
+      const name = document.getElementById("guard-name").value.trim();
+      if (!name) return alert("Entrez un nom de poste.");
+      const { error } = await db.from("guard_posts").insert({ name: name });
+      if (error) return alert("Erreur : " + error.message);
+      document.getElementById("guard-name").value = "";
+      loadGuards();
+    }
+
+    function showError(msg) {
+      const box = document.getElementById("dash-error");
+      box.textContent = msg;
+      box.classList.remove("hidden");
+    }
+
+    loadUtilities();
+    loadGuards();
+  </script>
+</body>
+</html>
