@@ -33,7 +33,7 @@ body {
     color: var(--text);
 }
 
-/* LOGIN / HEADER */
+/* HEADER */
 
 .topbar {
     height: 70px;
@@ -514,18 +514,13 @@ textarea:focus {
         </div>
 
         <div class="control-card">
-            <label>Poste</label>
-            <select id="poste" onchange="updatePoste()">
-                <option value="">Sélectionner le poste</option>
-                <option value="matin">🌅 Matin</option>
-                <option value="apres-midi">☀️ Après-midi</option>
-                <option value="nuit">🌙 Nuit</option>
-            </select>
+            <label>Poste (automatique)</label>
+            <input type="text" id="poste" readonly>
         </div>
 
         <div class="control-card">
-            <label>Date</label>
-            <input type="date" id="date">
+            <label>Date et heure</label>
+            <input type="text" id="date" readonly>
         </div>
 
     </div>
@@ -781,7 +776,7 @@ textarea:focus {
 
                 <div class="form-group">
                     <label>Pression Collecteur Eau Filtrée</label>
-                    <input type="number" step="0.1" id="collect_filtrée">
+                    <input type="number" step="0.1" id="collect_filtree">
                     <div class="range-info">Normal : 4 – 5 bar</div>
                 </div>
 
@@ -986,9 +981,48 @@ document.querySelector(".user-info span").textContent =
 document.getElementById("technicien").value =
     session.first_name + " " + session.last_name;
 
-// --- Date automatique ---
-document.getElementById("date").value =
-    new Date().toISOString().split("T")[0];
+
+/* ============================= */
+/* DATE, HEURE ET POSTE AUTO     */
+/* ============================= */
+
+function getPosteFromHour(h) {
+    if (h >= 6 && h < 14) return "matin";
+    if (h >= 14 && h < 22) return "apres-midi";
+    return "nuit";
+}
+
+function updateDateTime() {
+    const now = new Date();
+    const h = now.getHours();
+
+    // Date + heure en direct
+    document.getElementById("date").value =
+        now.toLocaleDateString("fr-FR") + " " +
+        now.toLocaleTimeString("fr-FR");
+
+    // Poste automatique
+    const poste = getPosteFromHour(h);
+    document.getElementById("poste").value = poste;
+
+    // Badge en haut à droite
+    const badge = document.getElementById("badge-poste");
+    if (poste === "nuit") badge.textContent = "Poste : 🌙 Nuit";
+    else if (poste === "matin") badge.textContent = "Poste : 🌅 Matin";
+    else badge.textContent = "Poste : ☀️ Après-midi";
+
+    // Afficher/masquer les champs nuit
+    document.querySelectorAll(".night-only").forEach(el => {
+        if (poste === "nuit") el.classList.remove("hidden");
+        else el.classList.add("hidden");
+    });
+
+    return poste;
+}
+
+// Première exécution + mise à jour chaque seconde
+updateDateTime();
+setInterval(updateDateTime, 1000);
 
 
 /* AFFICHER DASHBOARD */
@@ -1005,37 +1039,7 @@ function openChecklist(name) {
     document.getElementById("dashboard").style.display = "none";
     if (name === "water") {
         document.getElementById("waterChecklist").classList.add("active");
-        updatePoste();
     }
-}
-
-
-/* GESTION POSTE */
-
-function updatePoste() {
-    const poste = document.getElementById("poste").value;
-    const nightElements = document.querySelectorAll(".night-only");
-    const alertBox = document.getElementById("nightAlert");
-
-    nightElements.forEach(element => {
-        if (poste === "nuit") {
-            element.classList.remove("hidden");
-        } else {
-            element.classList.add("hidden");
-        }
-    });
-
-    if (poste && poste !== "nuit") {
-        alertBox.classList.add("show");
-    } else {
-        alertBox.classList.remove("show");
-    }
-
-    const badge = document.getElementById("badge-poste");
-    if (poste === "nuit") badge.textContent = "Poste : 🌙 Nuit";
-    else if (poste === "matin") badge.textContent = "Poste : 🌅 Matin";
-    else if (poste === "apres-midi") badge.textContent = "Poste : ☀️ Après-midi";
-    else badge.textContent = "Poste : —";
 }
 
 
@@ -1063,12 +1067,7 @@ function checkRange(inputId, min, max, statusId) {
 /* ENREGISTREMENT VERS SUPABASE */
 
 async function saveChecklist() {
-    const poste = document.getElementById("poste").value;
-
-    if (!poste) {
-        alert("Veuillez sélectionner le poste.");
-        return;
-    }
+    const poste = updateDateTime();
 
     // Récupérer toutes les valeurs numériques saisies (champs avec id)
     const values = {};
@@ -1099,7 +1098,7 @@ async function saveChecklist() {
         value: values.cpt_general || 0,
         data: values,
         poste: poste,
-        recorded_at: document.getElementById("date").value
+        recorded_at: new Date().toISOString()
     });
 
     if (error) {
