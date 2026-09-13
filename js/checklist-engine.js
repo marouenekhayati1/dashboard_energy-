@@ -1,23 +1,49 @@
-/* ============ MOTEUR DE CHECK-LISTS ============ */
+/* ============================================
+   MOTEUR DE CHECK-LISTS
+   ============================================ */
 
-const CHECKLISTS = {}; // registre rempli par les fichiers checklists/*.js
+const CHECKLISTS = {}; // registre rempli par js/checklists.js
 
 function registerChecklist(id, config) {
     CHECKLISTS[id] = config;
 }
 
-/* Afficher le dashboard principal */
-function showDashboard() {
-    document.getElementById("dashboard").style.display = "block";
-    document.getElementById("checklist-zone").style.display = "none";
+
+/* ---------- POSTE ACTUEL ---------- */
+
+function currentPoste() {
+    const h = new Date().getHours();
+    if (h >= 6 && h < 14) return "matin";
+    if (h >= 14 && h < 22) return "apres-midi";
+    return "nuit";
 }
 
-/* Ouvrir une check-list */
+
+/* ---------- AFFICHER LE DASHBOARD ---------- */
+
+function showDashboard() {
+    document.getElementById("dashboard").style.display = "block";
+
+    const zone = document.getElementById("checklist-zone");
+    zone.style.display = "none";
+    zone.innerHTML =
+        '<div class="page-header"><h1 id="checklist-title"></h1></div>';
+
+    // Mettre à jour le menu actif
+    document.querySelectorAll(".menu-item").forEach(mi => mi.classList.remove("active"));
+    const first = document.querySelector(".sidebar .menu-item");
+    if (first) first.classList.add("active");
+}
+
+
+/* ---------- OUVRIR UNE CHECK-LIST ---------- */
+
 function openChecklist(id) {
     const cfg = CHECKLISTS[id];
     if (!cfg) { alert("Check-list introuvable : " + id); return; }
 
     document.getElementById("dashboard").style.display = "none";
+
     const zone = document.getElementById("checklist-zone");
     zone.style.display = "block";
 
@@ -25,7 +51,6 @@ function openChecklist(id) {
 
     let html = "";
     for (const section of cfg.sections) {
-        // Section "night" → visible seulement au poste de nuit
         const hidden = section.night && currentPoste() !== "nuit" ? " hidden" : "";
         html += '<div class="section' + (section.night ? " night-only" : "") + hidden + '">';
         html += '<div class="section-header">' + section.title + '</div>';
@@ -44,22 +69,44 @@ function openChecklist(id) {
     </div>`;
 
     zone.innerHTML = html;
+
+    // Mettre à jour le menu actif (surligner l'item cliqué)
+    document.querySelectorAll(".menu-item").forEach(mi => mi.classList.remove("active"));
+    document.querySelectorAll(".sidebar .menu-item").forEach(mi => {
+        const oc = mi.getAttribute("onclick");
+        if (oc && oc.includes("'" + id + "'")) {
+            mi.classList.add("active");
+        }
+    });
+
+    // Remonter en haut de la page
+    window.scrollTo(0, 0);
 }
 
-/* Rendre UN champ selon son type */
-function renderField(f) {
-    const info = f.min !== undefined && f.max !== undefined
-        ? '<div class="range-info">Min : ' + f.min + ' / Max : ' + f.max + (f.unit || "") + '</div>'
-        : (f.hint ? '<div class="range-info">' + f.hint + '</div>' : "");
 
+/* ---------- RENDU D'UN CHAMP ---------- */
+
+function renderField(f) {
+
+    // Info de plage (min/max) ou indication
+    let info = "";
+    if (f.min !== undefined && f.max !== undefined) {
+        info = '<div class="range-info">Min : ' + f.min + ' / Max : ' + f.max + (f.unit || "") + '</div>';
+    } else if (f.hint) {
+        info = '<div class="range-info">' + f.hint + '</div>';
+    }
+
+    // Zone de statut (🟢/🔴) si min/max définis
     const statusDiv = (f.min !== undefined && f.max !== undefined)
-        ? '<div id="status_' + f.id + '" class="status"></div>' : "";
+        ? '<div id="status_' + f.id + '" class="status"></div>'
+        : "";
 
     let input = "";
 
     if (f.type === "number") {
         const oninput = (f.min !== undefined && f.max !== undefined)
-            ? ' oninput="checkRange(\'' + f.id + '\',' + f.min + ',' + f.max + ',\'status_' + f.id + '\')"' : "";
+            ? ' oninput="checkRange(\'' + f.id + '\',' + f.min + ',' + f.max + ',\'status_' + f.id + '\')"'
+            : "";
         input = '<input type="number" step="any" id="' + f.id + '"' + oninput + '>';
     }
     else if (f.type === "text") {
@@ -67,22 +114,27 @@ function renderField(f) {
     }
     else if (f.type === "select") {
         input = '<select id="' + f.id + '"><option value="">Sélectionner</option>';
-        for (const opt of f.options) input += '<option>' + opt + '</option>';
+        for (const opt of f.options) {
+            input += '<option>' + opt + '</option>';
+        }
         input += '</select>';
     }
     else if (f.type === "radio") {
         input = '<div class="radio-group">';
         f.options.forEach((opt, i) => {
             const oid = f.id + "_" + i;
-            input += '<div class="radio-option"><input type="radio" name="' + f.id + '" id="' + oid + '" value="' + opt + '">' +
-                     '<label for="' + oid + '">' + opt + '</label></div>';
+            input += '<div class="radio-option">'
+                  + '<input type="radio" name="' + f.id + '" id="' + oid + '" value="' + opt + '">'
+                  + '<label for="' + oid + '">' + opt + '</label>'
+                  + '</div>';
         });
         input += '</div>';
     }
     else if (f.type === "checkbox") {
-        input = '<div class="radio-group"><div class="radio-option">' +
-                '<input type="checkbox" id="' + f.id + '">' +
-                '<label for="' + f.id + '">' + f.label2 + '</label></div></div>';
+        input = '<div class="radio-group"><div class="radio-option">'
+              + '<input type="checkbox" id="' + f.id + '">'
+              + '<label for="' + f.id + '">' + f.label2 + '</label>'
+              + '</div></div>';
     }
     else if (f.type === "textarea") {
         input = '<textarea rows="4" id="' + f.id + '" placeholder="Commentaire..."></textarea>';
@@ -91,19 +143,30 @@ function renderField(f) {
     return '<div class="form-group"><label>' + f.label + '</label>' + input + info + statusDiv + '</div>';
 }
 
-/* Contrôle min/max */
+
+/* ---------- CONTRÔLE MIN / MAX ---------- */
+
 function checkRange(id, min, max, statusId) {
     const value = parseFloat(document.getElementById(id).value);
     const status = document.getElementById(statusId);
-    if (isNaN(value)) { status.innerHTML = ""; return; }
+
+    if (isNaN(value)) {
+        status.innerHTML = "";
+        return;
+    }
+
     if (value >= min && value <= max) {
-        status.innerHTML = "🟢 Conforme"; status.className = "status ok";
+        status.innerHTML = "🟢 Conforme";
+        status.className = "status ok";
     } else {
-        status.innerHTML = "🔴 Hors limite"; status.className = "status error";
+        status.innerHTML = "🔴 Hors limite";
+        status.className = "status error";
     }
 }
 
-/* Enregistrement */
+
+/* ---------- ENREGISTREMENT VERS SUPABASE ---------- */
+
 async function saveChecklist(id) {
     const cfg = CHECKLISTS[id];
     const values = {};
@@ -128,6 +191,7 @@ async function saveChecklist(id) {
 
     const { error } = await db.from("measurements").insert({
         technician_id: session.id,
+        utility_id: null,
         value: 0,
         data: values,
         poste: currentPoste(),
@@ -135,13 +199,10 @@ async function saveChecklist(id) {
         recorded_at: new Date().toISOString()
     });
 
-    if (error) { alert("Erreur : " + error.message); return; }
-    alert("✅ Check-list enregistrée avec succès !");
-}
+    if (error) {
+        alert("Erreur : " + error.message);
+        return;
+    }
 
-function currentPoste() {
-    const h = new Date().getHours();
-    if (h >= 6 && h < 14) return "matin";
-    if (h >= 14 && h < 22) return "apres-midi";
-    return "nuit";
+    alert("✅ Check-list enregistrée avec succès !");
 }
