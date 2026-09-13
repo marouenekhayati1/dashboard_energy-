@@ -50,10 +50,9 @@ function openChecklist(id) {
     const zone = document.getElementById("checklist-zone");
     zone.style.display = "block";
 
-    document.getElementById("checklist-title").textContent = cfg.icon + " " + cfg.title;
+    // Construire TOUT le contenu, y compris le titre (écrase l'ancien)
+    let html = '<div class="page-header"><h1>' + cfg.icon + " " + cfg.title + '</h1></div>';
 
-    // Construire TOUT le contenu (écrase l'ancien)
-    let html = "";
     for (const section of cfg.sections) {
         const hidden = section.night && currentPoste() !== "nuit" ? " hidden" : "";
         html += '<div class="section' + (section.night ? " night-only" : "") + hidden + '">';
@@ -82,6 +81,9 @@ function openChecklist(id) {
             mi.classList.add("active");
         }
     });
+
+    window.scrollTo(0, 0);
+}
 
     window.scrollTo(0, 0);
 }
