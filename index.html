@@ -59,7 +59,7 @@
       var options = '<option value="">— Sélectionner —</option>';
       for (var i = 0; i < data.length; i++) {
         var t = data[i];
-        options += '<option value="' + t.id + '">' + t.first_name + ' ' + t.last_name </option>';
+        options += '<option value="' + t.id + '">' + t.first_name + ' ' + t.last_name + ' (' + t.matricule + ')</option>';
       }
       select.innerHTML = options;
     }
