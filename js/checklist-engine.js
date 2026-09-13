@@ -26,6 +26,10 @@ function showDashboard() {
 
     const zone = document.getElementById("checklist-zone");
     zone.style.display = "none";
+   
+   const hz = document.getElementById("history-zone");
+    if (hz) hz.style.display = "none";
+
     zone.innerHTML = "";
 
     document.querySelectorAll(".menu-item").forEach(mi => mi.classList.remove("active"));
