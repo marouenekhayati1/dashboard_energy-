@@ -26,8 +26,7 @@ function showDashboard() {
 
     const zone = document.getElementById("checklist-zone");
     zone.style.display = "none";
-    zone.innerHTML =
-        '<div class="page-header"><h1 id="checklist-title"></h1></div>';
+    zone.innerHTML = "";
 
     document.querySelectorAll(".menu-item").forEach(mi => mi.classList.remove("active"));
     const first = document.querySelector(".sidebar .menu-item");
@@ -81,9 +80,6 @@ function openChecklist(id) {
             mi.classList.add("active");
         }
     });
-
-    window.scrollTo(0, 0);
-}
 
     window.scrollTo(0, 0);
 }
