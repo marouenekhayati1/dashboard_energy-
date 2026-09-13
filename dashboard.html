@@ -212,14 +212,6 @@ textarea:focus {
 
 /* FORM */
 
-.checklist {
-    display: none;
-}
-
-.checklist.active {
-    display: block;
-}
-
 .section {
     background: var(--card);
     border: 1px solid var(--border);
@@ -445,41 +437,15 @@ textarea:focus {
 
     <div class="menu-title">Check-lists</div>
 
-    <div class="menu-item" onclick="openChecklist('water')">
-        💧 Traitement d'eau
-    </div>
-
-    <div class="menu-item">
-        🔥 Eau surchauffée
-    </div>
-
-    <div class="menu-item">
-        ♨️ Chaudière vapeur
-    </div>
-
-    <div class="menu-item">
-        🔧 Pompe à vide
-    </div>
-
-    <div class="menu-item">
-        💨 Compresseurs
-    </div>
-
-    <div class="menu-item">
-        ❄️ Eau glacée
-    </div>
-
-    <div class="menu-item">
-        🌡️ Thermoventilation
-    </div>
-
-    <div class="menu-item">
-        ⚡ Groupes électrogènes
-    </div>
-
-    <div class="menu-item">
-        💧 Station d'osmose
-    </div>
+    <div class="menu-item" onclick="openChecklist('water')">💧 Traitement d'eau</div>
+    <div class="menu-item" onclick="openChecklist('surchauffee')">🔥 Eau surchauffée</div>
+    <div class="menu-item" onclick="openChecklist('vapeur')">♨️ Chaudière vapeur</div>
+    <div class="menu-item" onclick="openChecklist('vide')">🔧 Pompe à vide</div>
+    <div class="menu-item" onclick="openChecklist('compresseurs')">💨 Compresseurs</div>
+    <div class="menu-item" onclick="openChecklist('glacee')">❄️ Eau glacée</div>
+    <div class="menu-item" onclick="openChecklist('thermo')">🌡️ Thermoventilation</div>
+    <div class="menu-item" onclick="openChecklist('groupes')">⚡ Groupes électrogènes</div>
+    <div class="menu-item" onclick="openChecklist('osmose')">💧 Station d'osmose</div>
 
     <div class="menu-title">Administration</div>
 
@@ -505,7 +471,6 @@ textarea:focus {
         <p>Système de suivi des utilités et check-lists</p>
     </div>
 
-
     <div class="controls">
 
         <div class="control-card">
@@ -525,439 +490,16 @@ textarea:focus {
 
     </div>
 
-
-    <div class="dashboard-grid">
-
-        <div class="dashboard-card" onclick="openChecklist('water')">
-            <div class="dashboard-icon">💧</div>
-            <h3>Salle de traitement d'eau</h3>
-            <p>Pompes, filtres, UV, adoucisseurs et compteurs.</p>
-        </div>
-
-        <div class="dashboard-card">
-            <div class="dashboard-icon">🔥</div>
-            <h3>Eau surchauffée</h3>
-            <p>Pression, température et dosage chimique.</p>
-        </div>
-
-        <div class="dashboard-card">
-            <div class="dashboard-icon">♨️</div>
-            <h3>Chaudière vapeur</h3>
-            <p>Pression, purge et niveau d'eau.</p>
-        </div>
-
-        <div class="dashboard-card">
-            <div class="dashboard-icon">🔧</div>
-            <h3>Pompe à vide</h3>
-            <p>Pression et fonctionnement des pompes.</p>
-        </div>
-
-        <div class="dashboard-card">
-            <div class="dashboard-icon">💨</div>
-            <h3>Compresseurs d'air</h3>
-            <p>Températures et compteurs d'entretien.</p>
-        </div>
-
-        <div class="dashboard-card">
-            <div class="dashboard-icon">❄️</div>
-            <h3>Eau glacée</h3>
-            <p>Trane, Chiller absorption et York.</p>
-        </div>
-
-        <div class="dashboard-card">
-            <div class="dashboard-icon">🌡️</div>
-            <h3>Thermoventilation</h3>
-            <p>Filtres et turbines.</p>
-        </div>
-
-        <div class="dashboard-card">
-            <div class="dashboard-icon">⚡</div>
-            <h3>Groupes électrogènes</h3>
-            <p>Température, charge et huile.</p>
-        </div>
-
-        <div class="dashboard-card">
-            <div class="dashboard-icon">💧</div>
-            <h3>Station d'osmose</h3>
-            <p>Production, rejet et pressions.</p>
-        </div>
-
-    </div>
+    <div class="dashboard-grid" id="menu-grid"></div>
 
 </div>
 
+<!-- ZONE CHECKLIST (générée automatiquement par le moteur) -->
 
-<!-- CHECKLIST TRAITEMENT D'EAU -->
-
-<div id="waterChecklist" class="checklist">
-
+<div id="checklist-zone" style="display:none">
     <div class="page-header">
-        <h1>💧 Salle de traitement d'eau</h1>
-        <p>Check-list de contrôle des équipements</p>
-    </div>
-
-
-    <div class="alert warning" id="nightAlert">
-        🌙 Certains champs sont disponibles uniquement au poste de nuit.
-    </div>
-
-
-    <!-- COMPTEURS -->
-
-    <div class="section night-only hidden">
-
-        <div class="section-header">
-            📊 Relevé des compteurs
-        </div>
-
-        <div class="section-body">
-
-            <div class="form-grid">
-
-                <div class="form-group">
-                    <label>Compteur R1</label>
-                    <input type="number" id="cpt_R1">
-                </div>
-
-                <div class="form-group">
-                    <label>Compteur R2</label>
-                    <input type="number" id="cpt_R2">
-                </div>
-
-                <div class="form-group">
-                    <label>Compteur Général</label>
-                    <input type="number" id="cpt_general">
-                </div>
-
-                <div class="form-group">
-                    <label>Compteur Vestiaires</label>
-                    <input type="number" id="cpt_vestiaires">
-                </div>
-
-                <div class="form-group">
-                    <label>Compteur Process</label>
-                    <input type="number" id="cpt_process">
-                </div>
-
-                <div class="form-group">
-                    <label>Compteur Adoucisseur</label>
-                    <input type="number" id="cpt_adoucisseur">
-                </div>
-
-                <div class="form-group">
-                    <label>Compteur Lave-moule</label>
-                    <input type="number" id="cpt_lavemoule">
-                </div>
-
-                <div class="form-group">
-                    <label>Compteur BVM + TF</label>
-                    <input type="number" id="cpt_bvm_tf">
-                </div>
-
-                <div class="form-group">
-                    <label>Compteur SMT</label>
-                    <input type="number" id="cpt_smt">
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- POMPES -->
-
-    <div class="section">
-
-        <div class="section-header">
-            🔧 Pompes
-        </div>
-
-        <div class="section-body">
-
-            <div class="form-grid">
-
-                <div class="form-group">
-
-                    <label>Pompe Master Active</label>
-
-                    <div class="radio-group">
-
-                        <div class="radio-option">
-                            <input type="radio" name="master" id="p1" value="Pompe 1">
-                            <label for="p1">Pompe 1</label>
-                        </div>
-
-                        <div class="radio-option">
-                            <input type="radio" name="master" id="p2" value="Pompe 2">
-                            <label for="p2">Pompe 2</label>
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>Pression Pompe 1 (bar)</label>
-
-                    <input
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        id="pressionP1"
-                        oninput="checkRange('pressionP1',5,6,'statusP1')">
-
-                    <div class="range-info">
-                        Plage normale : 5 – 6 bar
-                    </div>
-
-                    <div id="statusP1" class="status"></div>
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>Pression Pompe 2 (bar)</label>
-
-                    <input
-                        type="number"
-                        step="0.1"
-                        id="pressionP2"
-                        oninput="checkRange('pressionP2',5,6,'statusP2')">
-
-                    <div class="range-info">
-                        Plage normale : 5 – 6 bar
-                    </div>
-
-                    <div id="statusP2" class="status"></div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- FILTRES -->
-
-    <div class="section">
-
-        <div class="section-header">
-            🔵 Filtres et Collecteurs
-        </div>
-
-        <div class="section-body">
-
-            <div class="form-grid">
-
-                <div class="form-group">
-                    <label>Pression Filtre Quartz 1</label>
-                    <input type="number" step="0.1" id="filtre_quartz1">
-                    <div class="range-info">Normal : 5 – 6 bar</div>
-                </div>
-
-                <div class="form-group">
-                    <label>Pression Filtre Quartz 2</label>
-                    <input type="number" step="0.1" id="filtre_quartz2">
-                    <div class="range-info">Normal : 5 – 6 bar</div>
-                </div>
-
-                <div class="form-group">
-                    <label>Pression Filtre PVC 1</label>
-                    <input type="number" step="0.1" id="filtre_pvc1">
-                    <div class="range-info">Normal : 4 – 5 bar</div>
-                </div>
-
-                <div class="form-group">
-                    <label>Pression Collecteur Eau Filtrée</label>
-                    <input type="number" step="0.1" id="collect_filtree">
-                    <div class="range-info">Normal : 4 – 5 bar</div>
-                </div>
-
-                <div class="form-group">
-                    <label>Pression Collecteur Eau Adoucie</label>
-                    <input type="number" step="0.1" id="collect_adoucie">
-                    <div class="range-info">Normal : 4 – 5 bar</div>
-                </div>
-
-                <div class="form-group">
-                    <label>Pression Filtre Inox</label>
-                    <input type="number" step="0.1" id="filtre_inox">
-                    <div class="range-info">Normal : 4 – 5 bar</div>
-                </div>
-
-                <div class="form-group">
-                    <label>Pression Filtre PVC 2</label>
-                    <input type="number" step="0.1" id="filtre_pvc2">
-                    <div class="range-info">Normal : 4 – 5 bar</div>
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- UV -->
-
-    <div class="section">
-
-        <div class="section-header">
-            💡 Système UV
-        </div>
-
-        <div class="section-body">
-
-            <div class="form-grid">
-
-                <div class="form-group">
-
-                    <label>Nombre de lampes actives UV1</label>
-
-                    <select id="uv1_lampes">
-                        <option value="">Sélectionner</option>
-                        <option>0</option>
-                        <option>1</option>
-                        <option>2</option>
-                    </select>
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>Pourcentage UV2</label>
-
-                    <input
-                        type="number"
-                        id="uv2"
-                        oninput="checkRange('uv2',95,100,'statusUV2')">
-
-                    <div class="range-info">
-                        Minimum : 95 %
-                    </div>
-
-                    <div id="statusUV2" class="status"></div>
-
-                </div>
-
-
-                <div class="form-group">
-                    <label>Nombre d'heures UV2</label>
-                    <input type="number" id="uv2_heures">
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>Pourcentage UV3</label>
-
-                    <input
-                        type="number"
-                        id="uv3"
-                        oninput="checkRange('uv3',95,100,'statusUV3')">
-
-                    <div class="range-info">
-                        Minimum : 95 %
-                    </div>
-
-                    <div id="statusUV3" class="status"></div>
-
-                </div>
-
-
-                <div class="form-group">
-                    <label>Nombre d'heures UV3</label>
-                    <input type="number" id="uv3_heures">
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- ADOUCISSEUR -->
-
-    <div class="section">
-
-        <div class="section-header">
-            🧪 Adoucisseur
-        </div>
-
-        <div class="section-body">
-
-            <div class="form-grid">
-
-                <div class="form-group">
-
-                    <label>Adoucisseur actif</label>
-
-                    <select id="adoucisseur_actif">
-                        <option value="">Sélectionner</option>
-                        <option>Adoucisseur 1</option>
-                        <option>Adoucisseur 2</option>
-                    </select>
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>Compteur de régénération</label>
-
-                    <input type="number" id="adoucisseur_regen">
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- COMMENTAIRE -->
-
-    <div class="section">
-
-        <div class="section-header">
-            📝 Commentaire
-        </div>
-
-        <div class="section-body">
-
-            <textarea
-                rows="5"
-                id="commentaire"
-                placeholder="Ajouter un commentaire ou signaler une anomalie...">
-            </textarea>
-
-        </div>
-
-    </div>
-
-
-    <div class="actions">
-
-        <button class="btn btn-secondary" onclick="showDashboard()">
-            Annuler
-        </button>
-
-        <button class="btn btn-success" onclick="saveChecklist()">
-            💾 Enregistrer
-        </button>
-
-    </div>
-
+        <h1 id="checklist-title"></h1>
+  </div>
 </div>
 
 </main>
@@ -966,6 +508,16 @@ textarea:focus {
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="js/config.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/checklist-engine.js"></script>
+<script src="js/checklists/water.js"></script>
+<script src="js/checklists/surchauffee.js"></script>
+<script src="js/checklists/vapeur.js"></script>
+<script src="js/checklists/vide.js"></script>
+<script src="js/checklists/compresseurs.js"></script>
+<script src="js/checklists/glacee.js"></script>
+<script src="js/checklists/thermo.js"></script>
+<script src="js/checklists/groupes.js"></script>
+<script src="js/checklists/osmose.js"></script>
 <script>
 
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -977,138 +529,42 @@ if (!session) window.location.href = "index.html";
 // --- Afficher le technicien connecté ---
 document.querySelector(".user-info span").textContent =
     "👤 " + session.first_name + " " + session.last_name;
-
 document.getElementById("technicien").value =
     session.first_name + " " + session.last_name;
 
-
-/* ============================= */
-/* DATE, HEURE ET POSTE AUTO     */
-/* ============================= */
-
-function getPosteFromHour(h) {
-    if (h >= 6 && h < 14) return "matin";
-    if (h >= 14 && h < 22) return "apres-midi";
-    return "nuit";
-}
-
+/* Horloge + poste automatique */
 function updateDateTime() {
     const now = new Date();
-    const h = now.getHours();
-
-    // Date + heure en direct
     document.getElementById("date").value =
-        now.toLocaleDateString("fr-FR") + " " +
-        now.toLocaleTimeString("fr-FR");
+        now.toLocaleDateString("fr-FR") + " " + now.toLocaleTimeString("fr-FR");
 
-    // Poste automatique
-    const poste = getPosteFromHour(h);
+    const poste = currentPoste();
     document.getElementById("poste").value = poste;
 
-    // Badge en haut à droite
     const badge = document.getElementById("badge-poste");
     if (poste === "nuit") badge.textContent = "Poste : 🌙 Nuit";
     else if (poste === "matin") badge.textContent = "Poste : 🌅 Matin";
     else badge.textContent = "Poste : ☀️ Après-midi";
 
-    // Afficher/masquer les champs nuit
     document.querySelectorAll(".night-only").forEach(el => {
         if (poste === "nuit") el.classList.remove("hidden");
         else el.classList.add("hidden");
     });
-
-    return poste;
 }
-
-// Première exécution + mise à jour chaque seconde
 updateDateTime();
 setInterval(updateDateTime, 1000);
 
-
-/* AFFICHER DASHBOARD */
-
-function showDashboard() {
-    document.getElementById("dashboard").style.display = "block";
-    document.getElementById("waterChecklist").classList.remove("active");
+/* Menu dynamique construit depuis les fichiers checklists/*.js */
+const grid = document.getElementById("menu-grid");
+for (const id in CHECKLISTS) {
+    const c = CHECKLISTS[id];
+    grid.innerHTML += `
+        <div class="dashboard-card" onclick="openChecklist('${id}')">
+            <div class="dashboard-icon">${c.icon}</div>
+            <h3>${c.title}</h3>
+            <p>Check-list de contrôle.</p>
+        </div>`;
 }
-
-
-/* OUVRIR CHECKLIST */
-
-function openChecklist(name) {
-    document.getElementById("dashboard").style.display = "none";
-    if (name === "water") {
-        document.getElementById("waterChecklist").classList.add("active");
-    }
-}
-
-
-/* CONTROLE MIN MAX */
-
-function checkRange(inputId, min, max, statusId) {
-    const value = parseFloat(document.getElementById(inputId).value);
-    const status = document.getElementById(statusId);
-
-    if (isNaN(value)) {
-        status.innerHTML = "";
-        return;
-    }
-
-    if (value >= min && value <= max) {
-        status.innerHTML = "🟢 Conforme";
-        status.className = "status ok";
-    } else {
-        status.innerHTML = "🔴 Hors limite";
-        status.className = "status error";
-    }
-}
-
-
-/* ENREGISTREMENT VERS SUPABASE */
-
-async function saveChecklist() {
-    const poste = updateDateTime();
-
-    // Récupérer toutes les valeurs numériques saisies (champs avec id)
-    const values = {};
-    document.querySelectorAll("#waterChecklist input[type=number]").forEach(inp => {
-        if (inp.id && inp.value !== "") {
-            values[inp.id] = parseFloat(inp.value);
-        }
-    });
-
-    // Champs texte / select
-    if (document.getElementById("uv1_lampes").value) {
-        values.uv1_lampes = document.getElementById("uv1_lampes").value;
-    }
-    if (document.getElementById("adoucisseur_actif").value) {
-        values.adoucisseur_actif = document.getElementById("adoucisseur_actif").value;
-    }
-    if (document.getElementById("commentaire").value.trim()) {
-        values.commentaire = document.getElementById("commentaire").value;
-    }
-
-    // Pompe master active (radio)
-    const master = document.querySelector('input[name="master"]:checked');
-    if (master) values.pompe_master = master.value;
-
-    const { error } = await db.from("measurements").insert({
-        technician_id: session.id,
-        utility_id: null,
-        value: values.cpt_general || 0,
-        data: values,
-        poste: poste,
-        recorded_at: new Date().toISOString()
-    });
-
-    if (error) {
-        alert("Erreur enregistrement : " + error.message);
-        return;
-    }
-
-    alert("✅ Check-list enregistrée avec succès !");
-}
-
 </script>
 
 </body>
