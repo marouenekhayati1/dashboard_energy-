@@ -460,6 +460,7 @@ tr:hover td {
         <option value="groupes">⚡ Groupes électrogènes</option>
         <option value="osmose">💧 Station d'osmose</option>
         <option value="history">📊 Historique</option>
+        <option value="anomalies">⚠️ Anomalies</option>
     </select>
 
     <div class="user-info">
@@ -497,7 +498,7 @@ tr:hover td {
         📊 Historique
     </div>
 
-    <div class="menu-item">
+    <div class="menu-item" onclick="openAnomalies()">
         ⚠️ Anomalies
     </div>
 
@@ -546,7 +547,7 @@ tr:hover td {
     </div>
 </div>
 
-<!-- ZONE HISTORIQUE (⚠️ bien à l'intérieur de <main>) -->
+<!-- ZONE HISTORIQUE -->
 
 <div id="history-zone" style="display:none">
 
@@ -591,6 +592,98 @@ tr:hover td {
                     <tr id="history-thead"></tr>
                 </thead>
                 <tbody id="history-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- ZONE ANOMALIES -->
+
+<div id="anomalies-zone" style="display:none">
+
+    <div class="page-header">
+        <h1>⚠️ Anomalies</h1>
+        <p id="anomalies-info"></p>
+    </div>
+
+    <div class="section">
+
+        <div class="section-header">➕ Déclarer une anomalie</div>
+
+        <div class="section-body">
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label>Titre de l'anomalie *</label>
+                    <input type="text" id="ano-title" placeholder="Ex : Fuite d'air compresseur 3">
+                </div>
+
+                <div class="form-group">
+                    <label>Check-list concernée</label>
+                    <select id="ano-utility">
+                        <option value="">— Générale —</option>
+                        <option value="water">💧 Traitement d'eau</option>
+                        <option value="surchauffee">🔥 Eau surchauffée</option>
+                        <option value="vapeur">♨️ Chaudière vapeur</option>
+                        <option value="vide">🔧 Pompe à vide</option>
+                        <option value="compresseurs">💨 Compresseurs</option>
+                        <option value="glacee">❄️ Eau glacée</option>
+                        <option value="thermo">🌡️ Thermoventilation</option>
+                        <option value="groupes">⚡ Groupes électrogènes</option>
+                        <option value="osmose">💧 Station d'osmose</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Priorité</label>
+                    <select id="ano-priority">
+                        <option>Normale</option>
+                        <option>Urgente</option>
+                        <option>Critique</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="form-group" style="margin-top:18px">
+                <label>Description détaillée</label>
+                <textarea rows="3" id="ano-desc" placeholder="Décrivez l'anomalie constatée..."></textarea>
+            </div>
+
+            <div class="actions">
+                <button class="btn btn-primary" onclick="saveAnomalie()">🚨 Déclarer</button>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="control-card" style="margin-bottom:20px">
+        <label>Filtrer par statut</label>
+        <select id="ano-filter" onchange="loadAnomalies()">
+            <option value="">Toutes</option>
+            <option value="ouverte">🔴 Ouvertes</option>
+            <option value="en cours">🟠 En cours</option>
+            <option value="resolue">🟢 Résolues</option>
+        </select>
+    </div>
+
+    <div class="card" style="overflow:hidden">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Titre</th>
+                        <th>Check-list</th>
+                        <th>Priorité</th>
+                        <th>Statut</th>
+                        <th>Déclarée par</th>
+                        <th>Résolue le</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="anomalies-body"></tbody>
             </table>
         </div>
     </div>
@@ -648,14 +741,24 @@ function mobileGo(dest) {
     if (!dest) return;
     if (dest === "home") showDashboard();
     else if (dest === "history") openHistory();
+    else if (dest === "anomalies") openAnomalies();
     else openChecklist(dest);
     document.getElementById("mobile-nav").value = "";
 }
 
-/* Ouvrir la page Historique */
-function openHistory() {
+/* Masquer toutes les zones */
+function hideAllZones() {
     document.getElementById("dashboard").style.display = "none";
     document.getElementById("checklist-zone").style.display = "none";
+    document.getElementById("history-zone").style.display = "none";
+    document.getElementById("anomalies-zone").style.display = "none";
+}
+
+
+/* ---------- PAGE HISTORIQUE ---------- */
+
+function openHistory() {
+    hideAllZones();
     document.getElementById("history-zone").style.display = "block";
 
     document.querySelectorAll(".menu-item").forEach(mi => mi.classList.remove("active"));
@@ -667,6 +770,140 @@ function openHistory() {
     loadHistory();
     window.scrollTo(0, 0);
 }
+
+
+/* ---------- PAGE ANOMALIES ---------- */
+
+const ANO_LABELS = {
+    water: "💧 Traitement d'eau",
+    surchauffee: "🔥 Eau surchauffée",
+    vapeur: "♨️ Chaudière vapeur",
+    vide: "🔧 Pompe à vide",
+    compresseurs: "💨 Compresseurs",
+    glacee: "❄️ Eau glacée",
+    thermo: "🌡️ Thermoventilation",
+    groupes: "⚡ Groupes électrogènes",
+    osmose: "💧 Station d'osmose"
+};
+
+
+function openAnomalies() {
+    hideAllZones();
+    document.getElementById("anomalies-zone").style.display = "block";
+
+    document.querySelectorAll(".menu-item").forEach(mi => mi.classList.remove("active"));
+    document.querySelectorAll(".sidebar .menu-item").forEach(mi => {
+        const oc = mi.getAttribute("onclick");
+        if (oc && oc.includes("openAnomalies")) mi.classList.add("active");
+    });
+
+    loadAnomalies();
+    window.scrollTo(0, 0);
+}
+
+
+async function saveAnomalie() {
+    const title = document.getElementById("ano-title").value.trim();
+    if (!title) { alert("⚠️ Veuillez saisir un titre."); return; }
+
+    const { error } = await db.from("anomalies").insert({
+        technician_id: session.id,
+        utility_name: document.getElementById("ano-utility").value || null,
+        title: title,
+        description: document.getElementById("ano-desc").value.trim(),
+        priority: document.getElementById("ano-priority").value,
+        status: "ouverte",
+        created_at: new Date().toISOString()
+    });
+
+    if (error) { alert("Erreur : " + error.message); return; }
+
+    document.getElementById("ano-title").value = "";
+    document.getElementById("ano-desc").value = "";
+    alert("✅ Anomalie déclarée !");
+    loadAnomalies();
+}
+
+
+async function loadAnomalies() {
+    const tbody = document.getElementById("anomalies-body");
+    const info = document.getElementById("anomalies-info");
+    tbody.innerHTML = '<tr><td colspan="8">⏳ Chargement...</td></tr>';
+
+    const filtre = document.getElementById("ano-filter").value;
+
+    let query = db.from("anomalies")
+        .select("*, technicians(first_name, last_name)")
+        .order("created_at", { ascending: false })
+        .limit(200);
+
+    if (filtre) query = query.eq("status", filtre);
+
+    const { data, error } = await query;
+
+    if (error) {
+        tbody.innerHTML = '<tr><td colspan="8">❌ Erreur : ' + error.message + '</td></tr>';
+        return;
+    }
+
+    if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8">Aucune anomalie. 🎉</td></tr>';
+        info.textContent = "";
+        return;
+    }
+
+    const ouvertes = data.filter(a => a.status !== "resolue").length;
+    info.textContent = data.length + " anomalie(s) — dont " + ouvertes + " non résolue(s)";
+
+    let html = "";
+    for (const a of data) {
+        const tech = a.technicians
+            ? a.technicians.first_name + " " + a.technicians.last_name
+            : "—";
+        const date = new Date(a.created_at).toLocaleString("fr-FR");
+        const resolue = a.resolved_at ? new Date(a.resolved_at).toLocaleString("fr-FR") : "—";
+        const label = a.utility_name ? (ANO_LABELS[a.utility_name] || a.utility_name) : "— Générale —";
+
+        const prioColor = a.priority === "Critique" ? "#ef4444"
+                        : a.priority === "Urgente" ? "#f59e0b" : "#94a3b8";
+        const statusColor = a.status === "ouverte" ? "#ef4444"
+                          : a.status === "en cours" ? "#f59e0b" : "#22c55e";
+
+        html += '<tr>'
+              + '<td style="white-space:nowrap">' + date + '</td>'
+              + '<td><strong>' + a.title + '</strong>'
+              + (a.description ? '<br><span style="color:var(--muted);font-size:12px">' + a.description + '</span>' : '')
+              + '</td>'
+              + '<td style="white-space:nowrap">' + label + '</td>'
+              + '<td style="color:' + prioColor + ';font-weight:bold">' + a.priority + '</td>'
+              + '<td style="color:' + statusColor + ';font-weight:bold">' + a.status + '</td>'
+              + '<td style="white-space:nowrap">' + tech + '</td>'
+              + '<td style="white-space:nowrap">' + resolue + '</td>'
+              + '<td style="white-space:nowrap">';
+
+        if (a.status === "ouverte") {
+            html += '<button class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="setStatus(' + a.id + ',\'en cours\')">🔧 En cours</button>';
+        } else if (a.status === "en cours") {
+            html += '<button class="btn btn-success" style="padding:6px 12px;font-size:12px" onclick="setStatus(' + a.id + ',\'resolue\')">✅ Résoudre</button>';
+        } else {
+            html += '<span style="color:#22c55e">✔</span>';
+        }
+
+        html += '</td></tr>';
+    }
+    tbody.innerHTML = html;
+}
+
+
+async function setStatus(id, status) {
+    const update = { status: status };
+    if (status === "resolue") update.resolved_at = new Date().toISOString();
+
+    const { error } = await db.from("anomalies").update(update).eq("id", id);
+    if (error) { alert("Erreur : " + error.message); return; }
+    loadAnomalies();
+}
+
 
 /* Menu dynamique construit depuis les check-lists enregistrées */
 const grid = document.getElementById("menu-grid");
