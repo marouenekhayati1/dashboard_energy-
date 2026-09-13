@@ -418,6 +418,21 @@ textarea:focus {
         ⚙️ <span>UTILITIES</span> CONTROL
     </div>
 
+        <select id="mobile-nav" onchange="mobileGo(this.value)">
+        <option value="">— Naviguer —</option>
+        <option value="home">🏠 Tableau de bord</option>
+        <option value="water">💧 Traitement d'eau</option>
+        <option value="surchauffee">🔥 Eau surchauffée</option>
+        <option value="vapeur">♨️ Chaudière vapeur</option>
+        <option value="vide">🔧 Pompe à vide</option>
+        <option value="compresseurs">💨 Compresseurs</option>
+        <option value="glacee">❄️ Eau glacée</option>
+        <option value="thermo">🌡️ Thermoventilation</option>
+        <option value="groupes">⚡ Groupes électrogènes</option>
+        <option value="osmose">💧 Station d'osmose</option>
+    </select>
+
+
     <div class="user-info">
         <span>👤 Technicien</span>
         <div class="badge" id="badge-poste">Poste : —</div>
@@ -546,6 +561,13 @@ function updateDateTime() {
 }
 updateDateTime();
 setInterval(updateDateTime, 1000);
+/* Navigation mobile */
+function mobileGo(dest) {
+    if (!dest) return;
+    if (dest === "home") showDashboard();
+    else openChecklist(dest);
+    document.getElementById("mobile-nav").value = "";
+}
 
 /* Menu dynamique construit depuis les fichiers checklists/*.js */
 const grid = document.getElementById("menu-grid");
