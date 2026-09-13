@@ -247,6 +247,7 @@ th {
     font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    white-space: nowrap;
 }
 
 tr:hover td {
@@ -587,13 +588,7 @@ tr:hover td {
         <div class="table-wrap">
             <table>
                 <thead>
-                    <tr>
-                        <th>Date et heure</th>
-                        <th>Check-list</th>
-                        <th>Poste</th>
-                        <th>Technicien</th>
-                        <th>Détail</th>
-                    </tr>
+                    <tr id="history-thead"></tr>
                 </thead>
                 <tbody id="history-body"></tbody>
             </table>
@@ -603,21 +598,6 @@ tr:hover td {
 </div>
 
 </main>
-
-<!-- MODALE DÉTAIL (fenêtre flottante, hors <main> : normal) -->
-
-<div id="detail-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center" onclick="if(event.target===this)closeDetail()">
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto;padding:25px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px">
-            <h2 style="font-size:18px">👁️ Détail du relevé</h2>
-            <button class="btn btn-secondary" style="padding:6px 14px" onclick="closeDetail()">✕ Fermer</button>
-        </div>
-        <table>
-            <thead><tr><th>Champ</th><th>Valeur</th></tr></thead>
-            <tbody id="detail-body"></tbody>
-        </table>
-    </div>
-</div>
 
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
