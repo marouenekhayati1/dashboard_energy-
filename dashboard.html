@@ -218,6 +218,41 @@ textarea:focus {
     color: var(--muted);
 }
 
+/* TABLEAU HISTORIQUE */
+
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+}
+
+.table-wrap {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+th, td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+th {
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+tr:hover td {
+    background: rgba(37, 99, 235, 0.05);
+}
+
 /* FORM */
 
 .section {
@@ -338,25 +373,6 @@ textarea:focus {
     color: white;
 }
 
-/* ALERT */
-
-.alert {
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    display: none;
-}
-
-.alert.show {
-    display: block;
-}
-
-.alert.warning {
-    background: rgba(245,158,11,0.15);
-    border: 1px solid var(--warning);
-    color: #fbbf24;
-}
-
 /* MOBILE */
 
 @media(max-width: 900px) {
@@ -442,6 +458,7 @@ textarea:focus {
         <option value="thermo">🌡️ Thermoventilation</option>
         <option value="groupes">⚡ Groupes électrogènes</option>
         <option value="osmose">💧 Station d'osmose</option>
+        <option value="history">📊 Historique</option>
     </select>
 
     <div class="user-info">
@@ -478,7 +495,6 @@ textarea:focus {
     <div class="menu-item" onclick="openHistory()">
         📊 Historique
     </div>
-
 
     <div class="menu-item">
         ⚠️ Anomalies
@@ -529,9 +545,7 @@ textarea:focus {
     </div>
 </div>
 
-</main>
-
-<!-- ZONE HISTORIQUE -->
+<!-- ZONE HISTORIQUE (⚠️ bien à l'intérieur de <main>) -->
 
 <div id="history-zone" style="display:none">
 
@@ -540,7 +554,7 @@ textarea:focus {
         <p id="history-info"></p>
     </div>
 
-    <div class="controls">
+    <div class="controls" style="grid-template-columns:1fr 1fr">
 
         <div class="control-card">
             <label>Filtrer par check-list</label>
@@ -569,7 +583,7 @@ textarea:focus {
 
     </div>
 
-    <div class="card" style="padding:0;overflow:hidden">
+    <div class="card" style="overflow:hidden">
         <div class="table-wrap">
             <table>
                 <thead>
@@ -588,7 +602,9 @@ textarea:focus {
 
 </div>
 
-<!-- MODALE DÉTAIL -->
+</main>
+
+<!-- MODALE DÉTAIL (fenêtre flottante, hors <main> : normal) -->
 
 <div id="detail-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center" onclick="if(event.target===this)closeDetail()">
     <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto;padding:25px">
@@ -651,6 +667,7 @@ setInterval(updateDateTime, 1000);
 function mobileGo(dest) {
     if (!dest) return;
     if (dest === "home") showDashboard();
+    else if (dest === "history") openHistory();
     else openChecklist(dest);
     document.getElementById("mobile-nav").value = "";
 }
@@ -670,7 +687,6 @@ function openHistory() {
     loadHistory();
     window.scrollTo(0, 0);
 }
-
 
 /* Menu dynamique construit depuis les check-lists enregistrées */
 const grid = document.getElementById("menu-grid");
