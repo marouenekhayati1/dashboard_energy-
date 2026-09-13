@@ -52,6 +52,8 @@ function openChecklist(id) {
 
     const zone = document.getElementById("checklist-zone");
     zone.style.display = "block";
+    const hz = document.getElementById("history-zone");
+    if (hz) hz.style.display = "none";
 
     // Construire TOUT le contenu, y compris le titre (écrase l'ancien)
     let html = '<div class="page-header"><h1>' + cfg.icon + " " + cfg.title + '</h1></div>';
