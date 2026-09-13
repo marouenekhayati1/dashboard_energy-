@@ -71,6 +71,14 @@ body {
     font-size: 13px;
 }
 
+/* MENU MOBILE (caché sur ordinateur) */
+
+#mobile-nav {
+    display: none;
+    width: auto;
+    max-width: 200px;
+}
+
 /* SIDEBAR */
 
 .sidebar {
@@ -385,6 +393,10 @@ textarea:focus {
         display: none;
     }
 
+    #mobile-nav {
+        display: block;
+    }
+
     .main {
         margin-left: 0;
         padding: 15px;
@@ -418,7 +430,7 @@ textarea:focus {
         ⚙️ <span>UTILITIES</span> CONTROL
     </div>
 
-        <select id="mobile-nav" onchange="mobileGo(this.value)">
+    <select id="mobile-nav" onchange="mobileGo(this.value)">
         <option value="">— Naviguer —</option>
         <option value="home">🏠 Tableau de bord</option>
         <option value="water">💧 Traitement d'eau</option>
@@ -431,7 +443,6 @@ textarea:focus {
         <option value="groupes">⚡ Groupes électrogènes</option>
         <option value="osmose">💧 Station d'osmose</option>
     </select>
-
 
     <div class="user-info">
         <span>👤 Technicien</span>
@@ -514,7 +525,7 @@ textarea:focus {
 <div id="checklist-zone" style="display:none">
     <div class="page-header">
         <h1 id="checklist-title"></h1>
-  </div>
+    </div>
 </div>
 
 </main>
@@ -561,6 +572,7 @@ function updateDateTime() {
 }
 updateDateTime();
 setInterval(updateDateTime, 1000);
+
 /* Navigation mobile */
 function mobileGo(dest) {
     if (!dest) return;
@@ -569,7 +581,7 @@ function mobileGo(dest) {
     document.getElementById("mobile-nav").value = "";
 }
 
-/* Menu dynamique construit depuis les fichiers checklists/*.js */
+/* Menu dynamique construit depuis les check-lists enregistrées */
 const grid = document.getElementById("menu-grid");
 for (const id in CHECKLISTS) {
     const c = CHECKLISTS[id];
