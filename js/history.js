@@ -75,10 +75,10 @@ function viewDetail(dataJson) {
         html += '<tr><td><strong>' + key + '</strong></td><td>' + data[key] + '</td></tr>';
     }
     document.getElementById("detail-body").innerHTML = html;
-    document.getElementById("detail-modal").classList.add("show");
+    document.getElementById("detail-modal").style.display = "flex";
 }
 
 
 function closeDetail() {
-    document.getElementById("detail-modal").classList.remove("show");
+    document.getElementById("detail-modal").style.display = "none";
 }
