@@ -29,19 +29,22 @@ function showDashboard() {
     zone.innerHTML =
         '<div class="page-header"><h1 id="checklist-title"></h1></div>';
 
-    // Mettre à jour le menu actif
     document.querySelectorAll(".menu-item").forEach(mi => mi.classList.remove("active"));
     const first = document.querySelector(".sidebar .menu-item");
     if (first) first.classList.add("active");
 }
 
 
-/* ---------- OUVRIR UNE CHECK-LIST ---------- */
+/* ---------- OUVRIR UNE CHECK-LIST ----------
+   Navigation libre : appelée à chaque clic dans la sidebar,
+   même si une autre check-list est déjà ouverte.
+   Le formulaire est toujours reconstruit à neuf. ---------- */
 
 function openChecklist(id) {
     const cfg = CHECKLISTS[id];
     if (!cfg) { alert("Check-list introuvable : " + id); return; }
 
+    // Masquer le dashboard, afficher la zone check-list
     document.getElementById("dashboard").style.display = "none";
 
     const zone = document.getElementById("checklist-zone");
@@ -49,6 +52,7 @@ function openChecklist(id) {
 
     document.getElementById("checklist-title").textContent = cfg.icon + " " + cfg.title;
 
+    // Construire TOUT le contenu (écrase l'ancien)
     let html = "";
     for (const section of cfg.sections) {
         const hidden = section.night && currentPoste() !== "nuit" ? " hidden" : "";
@@ -70,7 +74,7 @@ function openChecklist(id) {
 
     zone.innerHTML = html;
 
-    // Mettre à jour le menu actif (surligner l'item cliqué)
+    // Surligner l'item du menu cliqué
     document.querySelectorAll(".menu-item").forEach(mi => mi.classList.remove("active"));
     document.querySelectorAll(".sidebar .menu-item").forEach(mi => {
         const oc = mi.getAttribute("onclick");
@@ -79,7 +83,6 @@ function openChecklist(id) {
         }
     });
 
-    // Remonter en haut de la page
     window.scrollTo(0, 0);
 }
 
@@ -88,7 +91,6 @@ function openChecklist(id) {
 
 function renderField(f) {
 
-    // Info de plage (min/max) ou indication
     let info = "";
     if (f.min !== undefined && f.max !== undefined) {
         info = '<div class="range-info">Min : ' + f.min + ' / Max : ' + f.max + (f.unit || "") + '</div>';
@@ -96,7 +98,6 @@ function renderField(f) {
         info = '<div class="range-info">' + f.hint + '</div>';
     }
 
-    // Zone de statut (🟢/🔴) si min/max définis
     const statusDiv = (f.min !== undefined && f.max !== undefined)
         ? '<div id="status_' + f.id + '" class="status"></div>'
         : "";
@@ -191,7 +192,6 @@ async function saveChecklist(id) {
 
     const { error } = await db.from("measurements").insert({
         technician_id: session.id,
-        utility_id: null,
         value: 0,
         data: values,
         poste: currentPoste(),
@@ -205,4 +205,5 @@ async function saveChecklist(id) {
     }
 
     alert("✅ Check-list enregistrée avec succès !");
+    showDashboard();
 }
