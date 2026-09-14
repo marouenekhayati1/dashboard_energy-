@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,6 +19,25 @@
     --text: #f8fafc;
     --muted: #94a3b8;
     --border: #334155;
+    --input-bg: #0f172a;
+    --menu-color: #cbd5e1;
+    --label-color: #cbd5e1;
+    --hover-row: rgba(37, 99, 235, 0.05);
+}
+
+/* 🌞 THÈME CLAIR */
+[data-theme="light"] {
+    --bg: #f1f5f9;
+    --sidebar: #ffffff;
+    --card: #ffffff;
+    --card-light: #e2e8f0;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #cbd5e1;
+    --input-bg: #f8fafc;
+    --menu-color: #334155;
+    --label-color: #334155;
+    --hover-row: rgba(37, 99, 235, 0.08);
 }
 
 * {
@@ -31,6 +50,7 @@ body {
     font-family: Arial, sans-serif;
     background: var(--bg);
     color: var(--text);
+    transition: background 0.3s, color 0.3s;
 }
 
 /* HEADER */
@@ -71,6 +91,12 @@ body {
     font-size: 13px;
 }
 
+.theme-btn {
+    font-size: 18px;
+    padding: 8px 12px !important;
+    line-height: 1;
+}
+
 /* MENU MOBILE (caché sur ordinateur) */
 
 #mobile-nav {
@@ -105,7 +131,7 @@ body {
     margin-bottom: 5px;
     border-radius: 8px;
     cursor: pointer;
-    color: #cbd5e1;
+    color: var(--menu-color);
     transition: 0.2s;
 }
 
@@ -167,9 +193,9 @@ select,
 input,
 textarea {
     width: 100%;
-    background: #0f172a;
+    background: var(--input-bg);
     border: 1px solid var(--border);
-    color: white;
+    color: var(--text);
     padding: 11px;
     border-radius: 7px;
     font-size: 14px;
@@ -251,7 +277,7 @@ th {
 }
 
 tr:hover td {
-    background: rgba(37, 99, 235, 0.05);
+    background: var(--hover-row);
 }
 
 /* FORM */
@@ -285,7 +311,7 @@ tr:hover td {
     display: block;
     font-size: 13px;
     margin-bottom: 7px;
-    color: #cbd5e1;
+    color: var(--label-color);
 }
 
 .range-info {
@@ -331,7 +357,7 @@ tr:hover td {
     display: block;
     padding: 11px;
     text-align: center;
-    background: #0f172a;
+    background: var(--input-bg);
     border: 1px solid var(--border);
     border-radius: 7px;
     cursor: pointer;
@@ -340,6 +366,7 @@ tr:hover td {
 .radio-option input:checked + label {
     background: var(--primary);
     border-color: var(--primary);
+    color: white;
 }
 
 /* BUTTON */
@@ -362,6 +389,10 @@ tr:hover td {
 .btn-secondary {
     background: #475569;
     color: white;
+}
+
+[data-theme="light"] .btn-secondary {
+    background: #94a3b8;
 }
 
 .btn-primary {
@@ -466,6 +497,7 @@ tr:hover td {
     <div class="user-info">
         <span>👤 Technicien</span>
         <div class="badge" id="badge-poste">Poste : —</div>
+        <button class="btn btn-secondary theme-btn" onclick="toggleTheme()" id="theme-btn" title="Changer le thème">🌙</button>
         <button class="btn btn-secondary" style="padding:8px 14px" onclick="logout()">Déconnexion</button>
     </div>
 
@@ -707,6 +739,28 @@ const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // --- PROTECTION : pas de session → retour login ---
 const session = getSession();
 if (!session) window.location.href = "index.html";
+
+/* ---------- THÈME CLAIR / SOMBRE ---------- */
+
+function toggleTheme() {
+    const html = document.documentElement;
+    const next = html.getAttribute("data-theme") === "light" ? "dark" : "light";
+    html.setAttribute("data-theme", next);
+    localStorage.setItem("theme", next);
+    updateThemeBtn();
+}
+
+function updateThemeBtn() {
+    const isLight = document.documentElement.getAttribute("data-theme") === "light";
+    document.getElementById("theme-btn").textContent = isLight ? "☀️" : "🌙";
+}
+
+(function initTheme() {
+    const saved = localStorage.getItem("theme") || "dark";
+    document.documentElement.setAttribute("data-theme", saved);
+    updateThemeBtn();
+})();
+
 
 // --- Afficher le technicien connecté ---
 document.querySelector(".user-info span").textContent =
