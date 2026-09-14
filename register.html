@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>INDUS · Créer un compte</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <div class="container" style="max-width:420px; margin-top:60px">
+    <div class="card">
+      <h1 style="font-size:20px; text-align:center; margin-bottom:4px">⚡ INDUS</h1>
+      <p class="text-muted" style="text-align:center; font-size:13px; margin-bottom:20px">
+        Créer un nouveau compte technicien
+      </p>
+
+      <div id="reg-error" class="alert alert-critical hidden" style="margin-bottom:12px"></div>
+
+      <label style="display:block; font-size:13px; margin-bottom:6px">Prénom *</label>
+      <input type="text" id="reg-first" placeholder="Ex : Jean"
+             style="width:100%; margin-bottom:12px" />
+
+      <label style="display:block; font-size:13px; margin-bottom:6px">Nom *</label>
+      <input type="text" id="reg-last" placeholder="Ex : Dupont"
+             style="width:100%; margin-bottom:12px" />
+
+      <label style="display:block; font-size:13px; margin-bottom:6px">Matricule * (servira de mot de passe)</label>
+      <input type="text" id="reg-matricule" placeholder="Ex : T1234"
+             style="width:100%; margin-bottom:12px" />
+
+      <label style="display:block; font-size:13px; margin-bottom:6px">Rôle</label>
+      <select id="reg-role" style="width:100%; margin-bottom:16px">
+        <option value="technicien">Technicien</option>
+        <option value="admin">Admin</option>
+      </select>
+
+      <button class="btn btn-primary" style="width:100%; justify-content:center" onclick="doRegister()">
+        ✅ Créer mon compte
+      </button>
+
+      <p style="text-align:center; margin-top:16px">
+        <a href="index.html" style="color:#38bdf8; font-size:13px">← Retour à la connexion</a>
+      </p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/config.js"></script>
+  <script>
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function doRegister() {
+      const errBox = document.getElementById("reg-error");
+      errBox.classList.add("hidden");
+
+      const first = document.getElementById("reg-first").value.trim();
+      const last = document.getElementById("reg-last").value.trim();
+      const matricule = document.getElementById("reg-matricule").value.trim();
+      const role = document.getElementById("reg-role").value;
+
+      if (!first || !last) return showError("Entrez votre prénom et votre nom.");
+      if (!matricule) return showError("Entrez un matricule.");
+      if (matricule.length < 4) return showError("Le matricule doit contenir au moins 4 caractères.");
+
+      // Vérifier que le matricule n'existe pas déjà
+      const { data: existing } = await db
+        .from("technicians")
+        .select("id")
+        .eq("matricule", matricule)
+        .maybeSingle();
+
+      if (existing) return showError("Ce matricule est déjà utilisé.");
+
+      // Créer le compte
+      const { data, error } = await db
+        .from("technicians")
+        .insert({
+          first_name: first,
+          last_name: last,
+          matricule: matricule,
+          role: role,
+          is_active: true
+        })
+        .select()
+        .single();
+
+      if (error) return showError("Erreur : " + error.message);
+
+      alert("✅ Compte créé ! Vous pouvez maintenant vous connecter.");
+      window.location.href = "index.html";
+    }
+
+    function showError(msg) {
+      const box = document.getElementById("reg-error");
+      box.textContent = msg;
+      box.classList.remove("hidden");
+    }
+  </script>
+</body>
+</html>
