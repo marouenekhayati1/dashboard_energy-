@@ -27,13 +27,7 @@
 
       <label style="display:block; font-size:13px; margin-bottom:6px">Matricule * (servira de mot de passe)</label>
       <input type="text" id="reg-matricule" placeholder="Ex : T1234"
-             style="width:100%; margin-bottom:12px" />
-
-      <label style="display:block; font-size:13px; margin-bottom:6px">Rôle</label>
-      <select id="reg-role" style="width:100%; margin-bottom:16px">
-        <option value="technicien">Technicien</option>
-        <option value="admin">Admin</option>
-      </select>
+             style="width:100%; margin-bottom:16px" />
 
       <button class="btn btn-primary" style="width:100%; justify-content:center" onclick="doRegister()">
         ✅ Créer mon compte
@@ -57,7 +51,6 @@
       const first = document.getElementById("reg-first").value.trim();
       const last = document.getElementById("reg-last").value.trim();
       const matricule = document.getElementById("reg-matricule").value.trim();
-      const role = document.getElementById("reg-role").value;
 
       if (!first || !last) return showError("Entrez votre prénom et votre nom.");
       if (!matricule) return showError("Entrez un matricule.");
@@ -72,14 +65,14 @@
 
       if (existing) return showError("Ce matricule est déjà utilisé.");
 
-      // Créer le compte
+      // Créer le compte — rôle "technicien" par défaut
       const { data, error } = await db
         .from("technicians")
         .insert({
           first_name: first,
           last_name: last,
           matricule: matricule,
-          role: role,
+          role: "technicien",
           is_active: true
         })
         .select()
