@@ -405,7 +405,7 @@ tr:hover td {
     color: white;
 }
 
-/* MOBILE */
+/* MOBILE - TABLETTE */
 
 @media(max-width: 900px) {
 
@@ -435,6 +435,8 @@ tr:hover td {
     }
 }
 
+/* MOBILE - TÉLÉPHONE */
+
 @media(max-width: 600px) {
 
     .sidebar {
@@ -443,15 +445,48 @@ tr:hover td {
 
     #mobile-nav {
         display: block;
+        max-width: 130px;
+        font-size: 12px;
+        padding: 8px;
+    }
+
+    /* HEADER sur 2 lignes pour que tous les boutons soient accessibles */
+    .topbar {
+        padding: 8px 12px;
+        height: auto;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .logo {
+        font-size: 17px;
+    }
+
+    .user-info {
+        width: 100%;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .badge {
+        font-size: 11px;
+        padding: 6px 10px;
+    }
+
+    .theme-btn {
+        padding: 6px 10px !important;
+        font-size: 16px;
+    }
+
+    .user-info .btn {
+        padding: 8px 10px !important;
+        font-size: 12px;
     }
 
     .main {
         margin-left: 0;
         padding: 15px;
-    }
-
-    .topbar {
-        padding: 0 15px;
+        margin-top: 115px; /* place pour le header sur 2 lignes */
     }
 
     .controls,
@@ -463,8 +498,28 @@ tr:hover td {
         grid-template-columns: 1fr;
     }
 
-    .user-info span {
-        display: none;
+    .actions {
+        flex-direction: column;
+    }
+
+    .actions .btn {
+        width: 100%;
+    }
+
+    .form-grid .form-group {
+        min-width: 0;
+    }
+
+    textarea {
+        width: 100%;
+    }
+
+    .page-header h1 {
+        font-size: 22px;
+    }
+
+    .btn {
+        min-height: 44px; /* boutons facilement tapables au doigt */
     }
 }
 </style>
