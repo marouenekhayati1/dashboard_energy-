@@ -34,13 +34,14 @@ async function loadHistory() {
     tbody.innerHTML = '<tr><td colspan="4">⏳ Chargement...</td></tr>';
 
     const filtre = document.getElementById("history-filter").value;
-    const nb = parseInt(document.getElementById("history-nb").value) || 50;
+    const nbValue = document.getElementById("history-nb").value;
+    const nb = nbValue === "all" ? null : parseInt(nbValue, 10) || 50;
 
     let query = db.from("measurements")
         .select("*, technicians(first_name, last_name)")
-        .order("recorded_at", { ascending: false })
-        .limit(nb);
+        .order("recorded_at", { ascending: false });
 
+    if (nb !== null) query = query.limit(nb);
     if (filtre) query = query.eq("utility_name", filtre);
 
     const { data, error } = await query;

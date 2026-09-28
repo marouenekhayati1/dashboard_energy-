@@ -1,4 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
+  if (window.initTheme) {
+    window.initTheme();
+  }
+
   if (!window.supabase) {
     return;
   }
@@ -10,10 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!session) {
     window.location.href = "index.html";
     return;
-  }
-
-  if (window.initTheme) {
-    window.initTheme();
   }
 
   const userName = session.first_name + " " + session.last_name;
