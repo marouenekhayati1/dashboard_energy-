@@ -45,6 +45,10 @@ document.addEventListener("DOMContentLoaded", () => {
         element.addEventListener("click", openHistory);
       }
 
+      if (action === "open-history-v2") {
+        element.addEventListener("click", openHistoryV2);
+      }
+
       if (action === "open-water-consumption") {
         element.addEventListener("click", openWaterConsumption);
       }
@@ -111,6 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!dest) return;
     if (dest === "home") showDashboard();
     else if (dest === "history") openHistory();
+    else if (dest === "history-v2") openHistoryV2();
     else if (dest === "water-consumption") openWaterConsumption();
     else if (dest === "anomalies") openAnomalies();
     else openChecklist(dest);
@@ -122,15 +127,19 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function hideAllZones() {
+    if (typeof closeHistoryV2Detail === "function") closeHistoryV2Detail();
+
     const dashboard = document.getElementById("dashboard");
     const checklistZone = document.getElementById("checklist-zone");
     const historyZone = document.getElementById("history-zone");
+    const historyV2Zone = document.getElementById("history-v2-zone");
     const waterConsumptionZone = document.getElementById("water-consumption-zone");
     const anomaliesZone = document.getElementById("anomalies-zone");
 
     if (dashboard) dashboard.style.display = "none";
     if (checklistZone) checklistZone.style.display = "none";
     if (historyZone) historyZone.style.display = "none";
+    if (historyV2Zone) historyV2Zone.style.display = "none";
     if (waterConsumptionZone) waterConsumptionZone.style.display = "none";
     if (anomaliesZone) anomaliesZone.style.display = "none";
   }
@@ -148,6 +157,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (typeof loadHistory === "function") {
       loadHistory();
+    }
+    window.scrollTo(0, 0);
+  }
+
+  function openHistoryV2() {
+    hideAllZones();
+    const zone = document.getElementById("history-v2-zone");
+    if (zone) zone.style.display = "block";
+
+    document.querySelectorAll(".menu-item").forEach((item) => item.classList.remove("active"));
+    const menuItem = document.querySelector("[data-action='open-history-v2']");
+    if (menuItem) menuItem.classList.add("active");
+
+    if (typeof loadHistoryV2 === "function") {
+      loadHistoryV2();
     }
     window.scrollTo(0, 0);
   }

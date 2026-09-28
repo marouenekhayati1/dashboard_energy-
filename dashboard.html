@@ -329,6 +329,42 @@ textarea:focus {
     overflow-x: auto;
 }
 
+.history-v2-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: none;
+    place-items: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.68);
+}
+
+.history-v2-modal.show {
+    display: grid;
+}
+
+.history-v2-dialog {
+    width: min(700px, 100%);
+    max-height: 85vh;
+    overflow: auto;
+    padding: 20px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.history-v2-dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.history-v2-dialog-header h2 {
+    font-size: 20px;
+}
+
 .water-consumption-table {
     min-width: 1500px;
     table-layout: fixed;
@@ -654,6 +690,7 @@ tr:hover td {
         <option value="groupes">⚡ Groupes électrogènes</option>
         <option value="osmose">💧 Station d'osmose</option>
         <option value="history">📊 Historique</option>
+        <option value="history-v2">📋 Historique V2</option>
         <option value="water-consumption">💧 Consommation d'eau</option>
         <option value="anomalies">⚠️ Anomalies</option>
     </select>
@@ -692,6 +729,10 @@ tr:hover td {
 
     <div class="menu-item" data-action="open-history">
         📊 Historique
+    </div>
+
+    <div class="menu-item" data-action="open-history-v2">
+        📋 Historique V2
     </div>
 
     <div class="menu-item" data-action="open-water-consumption">
@@ -797,6 +838,76 @@ tr:hover td {
         </div>
     </div>
 
+</div>
+
+<!-- ZONE HISTORIQUE V2 -->
+
+<div id="history-v2-zone" style="display:none">
+    <div class="page-header">
+        <h1>📋 Historique des relevés V2</h1>
+        <p id="history-v2-info"></p>
+    </div>
+
+    <div class="controls" style="grid-template-columns:1fr 1fr">
+        <div class="control-card">
+            <label for="history-v2-filter">Filtrer par check-list</label>
+            <select id="history-v2-filter">
+                <option value="">Toutes les check-lists</option>
+                <option value="water">💧 Traitement d'eau</option>
+                <option value="surchauffee">🔥 Eau surchauffée</option>
+                <option value="vapeur">♨️ Chaudière vapeur</option>
+                <option value="vide">🔧 Pompe à vide</option>
+                <option value="compresseurs">💨 Compresseurs</option>
+                <option value="glacee">❄️ Eau glacée</option>
+                <option value="thermo">🌡️ Thermoventilation</option>
+                <option value="groupes">⚡ Groupes électrogènes</option>
+                <option value="osmose">💧 Station d'osmose</option>
+            </select>
+        </div>
+        <div class="control-card">
+            <label for="history-v2-nb">Nombre de relevés</label>
+            <select id="history-v2-nb">
+                <option value="50">50 derniers</option>
+                <option value="100">100 derniers</option>
+                <option value="500">500 derniers</option>
+                <option value="all">Tout afficher</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="card" style="overflow:hidden">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date et heure</th>
+                        <th>Check-list</th>
+                        <th>Poste</th>
+                        <th>Technicien</th>
+                        <th>Détail</th>
+                    </tr>
+                </thead>
+                <tbody id="history-v2-body">
+                    <tr><td colspan="5">Chargement...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="history-v2-detail-modal" class="history-v2-modal" role="dialog" aria-modal="true" aria-labelledby="history-v2-detail-title" tabindex="-1">
+        <div class="history-v2-dialog">
+            <div class="history-v2-dialog-header">
+                <h2 id="history-v2-detail-title">Détail du relevé</h2>
+                <button class="btn btn-secondary" type="button" data-action="close-history-v2-detail" aria-label="Fermer le détail">✕</button>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Champ</th><th>Valeur</th></tr></thead>
+                    <tbody id="history-v2-detail-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- ZONE CONSOMMATION D'EAU -->
@@ -932,6 +1043,7 @@ tr:hover td {
 <script src="js/checklist-engine.js"></script>
 <script src="js/checklists.js"></script>
 <script src="js/history.js"></script>
+<script src="js/history-v2.js"></script>
 <script src="js/water-consumption.js"></script>
 <script src="js/pages/dashboard.js"></script>
 

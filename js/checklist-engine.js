@@ -29,6 +29,8 @@ function showDashboard() {
    
    const hz = document.getElementById("history-zone");
     if (hz) hz.style.display = "none";
+    const historyV2Zone = document.getElementById("history-v2-zone");
+    if (historyV2Zone) historyV2Zone.style.display = "none";
     const waterConsumptionZone = document.getElementById("water-consumption-zone");
     if (waterConsumptionZone) waterConsumptionZone.style.display = "none";
 
@@ -56,6 +58,8 @@ function openChecklist(id) {
     zone.style.display = "block";
     const hz = document.getElementById("history-zone");
     if (hz) hz.style.display = "none";
+    const historyV2Zone = document.getElementById("history-v2-zone");
+    if (historyV2Zone) historyV2Zone.style.display = "none";
     const waterConsumptionZone = document.getElementById("water-consumption-zone");
     if (waterConsumptionZone) waterConsumptionZone.style.display = "none";
 
