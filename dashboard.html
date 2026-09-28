@@ -329,6 +329,15 @@ textarea:focus {
     overflow-x: auto;
 }
 
+.water-consumption-table {
+    min-width: 820px;
+}
+
+.water-consumption-alert {
+    color: var(--warning);
+    font-weight: 600;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
@@ -615,6 +624,7 @@ tr:hover td {
         <option value="groupes">⚡ Groupes électrogènes</option>
         <option value="osmose">💧 Station d'osmose</option>
         <option value="history">📊 Historique</option>
+        <option value="water-consumption">💧 Consommation d'eau</option>
         <option value="anomalies">⚠️ Anomalies</option>
     </select>
 
@@ -652,6 +662,10 @@ tr:hover td {
 
     <div class="menu-item" data-action="open-history">
         📊 Historique
+    </div>
+
+    <div class="menu-item" data-action="open-water-consumption">
+        💧 Consommation d'eau
     </div>
 
     <div class="menu-item" data-action="open-anomalies">
@@ -753,6 +767,47 @@ tr:hover td {
         </div>
     </div>
 
+</div>
+
+<!-- ZONE CONSOMMATION D'EAU -->
+
+<div id="water-consumption-zone" style="display:none">
+    <div class="page-header">
+        <h1>💧 Consommation d'eau</h1>
+        <p id="water-consumption-info">La consommation est calculée par différence entre deux index successifs du même compteur.</p>
+    </div>
+
+    <div class="controls" style="grid-template-columns:1fr 1fr">
+        <div class="control-card">
+            <label for="water-consumption-from">Du</label>
+            <input id="water-consumption-from" type="date">
+        </div>
+        <div class="control-card">
+            <label for="water-consumption-to">Au</label>
+            <input id="water-consumption-to" type="date">
+        </div>
+    </div>
+
+    <div class="card" style="overflow:hidden">
+        <div class="table-wrap">
+            <table class="water-consumption-table">
+                <thead>
+                    <tr>
+                        <th>Date du relevé</th>
+                        <th>Installation</th>
+                        <th>Compteur</th>
+                        <th>Date index précédent</th>
+                        <th>Index précédent</th>
+                        <th>Nouvel index</th>
+                        <th>Consommation</th>
+                    </tr>
+                </thead>
+                <tbody id="water-consumption-body">
+                    <tr><td colspan="7">Chargement des relevés...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <!-- ZONE ANOMALIES -->
@@ -857,6 +912,7 @@ tr:hover td {
 <script src="js/checklist-engine.js"></script>
 <script src="js/checklists.js"></script>
 <script src="js/history.js"></script>
+<script src="js/water-consumption.js"></script>
 <script src="js/pages/dashboard.js"></script>
 
 </body>

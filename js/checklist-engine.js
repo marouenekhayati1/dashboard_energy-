@@ -29,6 +29,8 @@ function showDashboard() {
    
    const hz = document.getElementById("history-zone");
     if (hz) hz.style.display = "none";
+    const waterConsumptionZone = document.getElementById("water-consumption-zone");
+    if (waterConsumptionZone) waterConsumptionZone.style.display = "none";
 
     zone.innerHTML = "";
 
@@ -54,6 +56,8 @@ function openChecklist(id) {
     zone.style.display = "block";
     const hz = document.getElementById("history-zone");
     if (hz) hz.style.display = "none";
+    const waterConsumptionZone = document.getElementById("water-consumption-zone");
+    if (waterConsumptionZone) waterConsumptionZone.style.display = "none";
 
     // Construire TOUT le contenu, y compris le titre (écrase l'ancien)
     let html = '<div class="page-header"><h1>' + cfg.icon + " " + cfg.title + '</h1></div>';

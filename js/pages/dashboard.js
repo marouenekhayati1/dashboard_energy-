@@ -45,6 +45,10 @@ document.addEventListener("DOMContentLoaded", () => {
         element.addEventListener("click", openHistory);
       }
 
+      if (action === "open-water-consumption") {
+        element.addEventListener("click", openWaterConsumption);
+      }
+
       if (action === "open-anomalies") {
         element.addEventListener("click", openAnomalies);
       }
@@ -107,6 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!dest) return;
     if (dest === "home") showDashboard();
     else if (dest === "history") openHistory();
+    else if (dest === "water-consumption") openWaterConsumption();
     else if (dest === "anomalies") openAnomalies();
     else openChecklist(dest);
 
@@ -120,11 +125,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const dashboard = document.getElementById("dashboard");
     const checklistZone = document.getElementById("checklist-zone");
     const historyZone = document.getElementById("history-zone");
+    const waterConsumptionZone = document.getElementById("water-consumption-zone");
     const anomaliesZone = document.getElementById("anomalies-zone");
 
     if (dashboard) dashboard.style.display = "none";
     if (checklistZone) checklistZone.style.display = "none";
     if (historyZone) historyZone.style.display = "none";
+    if (waterConsumptionZone) waterConsumptionZone.style.display = "none";
     if (anomaliesZone) anomaliesZone.style.display = "none";
   }
 
@@ -141,6 +148,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (typeof loadHistory === "function") {
       loadHistory();
+    }
+    window.scrollTo(0, 0);
+  }
+
+  function openWaterConsumption() {
+    hideAllZones();
+    const zone = document.getElementById("water-consumption-zone");
+    if (zone) zone.style.display = "block";
+
+    document.querySelectorAll(".menu-item").forEach((item) => item.classList.remove("active"));
+    const menuItem = document.querySelector("[data-action='open-water-consumption']");
+    if (menuItem) menuItem.classList.add("active");
+
+    if (typeof loadWaterConsumption === "function") {
+      loadWaterConsumption();
     }
     window.scrollTo(0, 0);
   }
