@@ -1,116 +1,172 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>INDUS · Connexion</title>
-  <link rel="stylesheet" href="css/styles.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>INDUS · Connexion</title>
+
+    <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
 
-  <div class="container" style="max-width:420px; margin-top:60px">
+<div class="container">
     <div class="card">
-      <h1 style="font-size:20px; text-align:center; margin-bottom:4px">⚡ INDUS</h1>
-      <p class="text-muted" style="text-align:center; font-size:13px; margin-bottom:20px">
-        Monitoring des utilités — Connexion
-      </p>
 
-      <div id="login-error" class="alert alert-critical hidden" style="margin-bottom:12px"></div>
+        <h1 class="logo-title">⚡ INDUS</h1>
 
-      <label style="display:block; font-size:13px; margin-bottom:6px">Technicien</label>
-      <select id="login-tech" style="width:100%; margin-bottom:12px">
-        <option value="">Chargement…</option>
-      </select>
+        <p class="logo-subtitle">
+            Monitoring des utilités · Connexion
+        </p>
 
-      <label style="display:block; font-size:13px; margin-bottom:6px">Matricule</label>
-      <input type="password" id="login-matricule" placeholder="Votre matricule"
-             style="width:100%; margin-bottom:16px"
-             onkeydown="if(event.key==='Enter') doLogin()" />
+        <div id="login-error"
+             class="alert alert-critical hidden">
+        </div>
 
-      <button class="btn btn-primary" style="width:100%; justify-content:center" onclick="doLogin()">
-        Accéder au monitoring →
-      </button>
+        <label for="login-tech">Technicien</label>
 
-      <p style="text-align:center; margin-top:16px">
-        <a href="register.html" style="color:#38bdf8; font-size:13px">➕ Créer un compte</a>
-      </p>
+        <select id="login-tech">
+            <option value="">Chargement...</option>
+        </select>
+
+        <label for="login-matricule">Matricule</label>
+
+        <input
+            type="password"
+            id="login-matricule"
+            placeholder="Votre matricule"
+            onkeydown="if(event.key==='Enter') doLogin()"
+        >
+
+        <button
+            class="btn btn-primary"
+            onclick="doLogin()">
+            Accéder au monitoring →
+        </button>
+
+        <a href="register.html" class="auth-link">
+            ➕ Créer un compte
+        </a>
+
     </div>
-  </div>
+</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="js/config.js"></script>
-  <script src="js/auth.js"></script>
-  <script>
-    const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+<script>
+(function () {
+    const theme = localStorage.getItem("theme") || "dark";
+    document.documentElement.setAttribute("data-theme", theme);
+})();
+</script>
 
-    // Si déjà connecté → directement au dashboard
-    if (getSession()) window.location.href = "dashboard.html";
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
 
-    // --- Charger la liste des techniciens ---
-    async function loadTechnicians() {
-      const select = document.getElementById("login-tech");
-      const { data, error } = await db
+<script>
+const db = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+);
+
+if (getSession()) {
+    window.location.href = "dashboard.html";
+}
+
+async function loadTechnicians() {
+
+    const select =
+        document.getElementById("login-tech");
+
+    const { data, error } = await db
         .from("technicians")
-        .select("id, first_name, last_name, matricule, role, is_active")
+        .select(
+            "id, first_name, last_name, matricule, role, is_active"
+        )
         .eq("is_active", true)
         .order("first_name");
 
-      if (error || !data || data.length === 0) {
-        select.innerHTML = '<option value="">Aucun technicien trouvé</option>';
-        return;
-      }
+    if (error || !data || data.length === 0) {
 
-      var options = '<option value="">— Sélectionner —</option>';
-      for (var i = 0; i < data.length; i++) {
-        var t = data[i];
-               options += '<option value="' + t.id + '">' + t.first_name + ' ' + t.last_name + '</option>';
-      }
-      select.innerHTML = options;
+        select.innerHTML =
+            '<option value="">Aucun technicien trouvé</option>';
+
+        return;
     }
 
-    // --- Connexion ---
-    async function doLogin() {
-      const errBox = document.getElementById("login-error");
-      errBox.classList.add("hidden");
+    let options =
+        '<option value="">— Sélectionner —</option>';
 
-      const select = document.getElementById("login-tech");
-      const matricule = document.getElementById("login-matricule").value.trim();
+    data.forEach(t => {
 
-      if (!select.value) return showError("Sélectionnez un technicien.");
-      if (!matricule) return showError("Entrez votre matricule.");
+        options += `
+            <option value="${t.id}">
+                ${t.first_name} ${t.last_name}
+            </option>
+        `;
+    });
 
-      const { data, error } = await db
+    select.innerHTML = options;
+}
+
+async function doLogin() {
+
+    document
+        .getElementById("login-error")
+        .classList.add("hidden");
+
+    const tech =
+        document.getElementById("login-tech").value;
+
+    const matricule =
+        document.getElementById("login-matricule")
+        .value.trim();
+
+    if (!tech)
+        return showError("Sélectionnez un technicien.");
+
+    if (!matricule)
+        return showError("Entrez votre matricule.");
+
+    const { data, error } = await db
         .from("technicians")
         .select("*")
-        .eq("id", select.value)
+        .eq("id", tech)
         .eq("matricule", matricule)
         .eq("is_active", true)
         .maybeSingle();
 
-      if (error) return showError("Erreur base : " + error.message);
-      if (!data) return showError("Matricule incorrect.");
+    if (error)
+        return showError(
+            "Erreur base : " + error.message
+        );
 
-      setSession({
+    if (!data)
+        return showError("Matricule incorrect.");
+
+    setSession({
         id: data.id,
         first_name: data.first_name,
         last_name: data.last_name,
         matricule: data.matricule,
         role: data.role
-      });
-
-      window.location.href = "dashboard.html";
-    }
-
-    function showError(msg) {
-      const box = document.getElementById("login-error");
-      box.textContent = msg;
-      box.classList.remove("hidden");
-    }
-
-    // --- Chargement automatique une fois le DOM prêt ---
-    document.addEventListener("DOMContentLoaded", function() {
-      loadTechnicians();
     });
-  </script>
+
+    window.location.href = "dashboard.html";
+}
+
+function showError(msg) {
+
+    const box =
+        document.getElementById("login-error");
+
+    box.textContent = msg;
+    box.classList.remove("hidden");
+}
+
+document.addEventListener(
+    "DOMContentLoaded",
+    loadTechnicians
+);
+</script>
+
 </body>
 </html>
