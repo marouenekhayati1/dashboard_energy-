@@ -1,117 +1,194 @@
-/* ==========================================================================
-   Thème unifié — variables communes
-   ========================================================================== */
+/* =========================================================
+   INDUS AUTH PAGES
+========================================================= */
+
 :root {
-    /* Couleurs de marque */
-    --brand-primary: #4f46e5;
-    --brand-secondary: #7c3aed;
+    --brand-primary: #2*63eb;
+    --brand-secondary: #38bd*8;
 
-    /* Palette sémantique */
-    --color-success: #22c55e;
-    --color-warning: #f59e0b;
-    --color-danger: #ef4444;
+    --success: #22c55e;
+    --*arning: #f59e0b;
+    --danger: #ef*444;
 
-    /* Espacements */
-    --spacing-sm: 0.5rem;
-    --spacing-md: 1rem;
-    --spacing-lg: 2rem;
+    --radius: 12px;
 
-    /* Rayons & ombres */
-    --radius: 8px;
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --b*: #0f172a;
+    --card: #1e293b;
+  * --text: #f8fafc;
+    --muted: #94*3b8;
+    --border: #334155;
 
-    /* Transitions */
-    --transition: 0.2s ease-in-out;
-
-    /* Thème clair (défaut) */
-    --bg: #ffffff;
-    --bg-alt: #f3f4f6;
-    --text: #1f2937;
-    --text-muted: #6b7280;
-    --border: #e5e7eb;
+    -*shadow:
+        0 10px 25px rgba(0*0,0,.25);
 }
 
-/* Thème sombre — seules les couleurs changent */
-:root[data-theme="dark"] {
-    --bg: #111827;
-    --bg-alt: #1f2937;
-    --text: #f9fafb;
-    --text-muted: #9ca3af;
-    --border: #374151;
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+[data-theme="light"] *
+    --bg: #f1f5f9;
+    --card: #f*ffff;
+    --text: #0f172a;
+    --m*ted: #64748b;
+    --*order: #cbd5e1;
 }
 
-/* ==========================================================================
-   Base
-   ========================================================================== */
-body {
+* {
+    box*sizing* border-box;
     margin: 0;
-    font-family: "Inter", system-ui, sans-serif;
-    background-color: var(--bg);
-    color: var(--text);
-    line-height: 1.6;
-    transition: background-color var(--transition), color var(--transition);
+    pa*ding: *;
 }
 
-h1, h2, h3 {
-    color: var(--text);
-    margin: 0 0 var(--spacing-md);
+body {
+    font*family: Arial, sans-serif;
+
+    ba*kground: var(--bg);
+    color: var*--text);
+
+    min-height: 100vh;
+
+*   display* flex;
+    justify-content: center*
+    align-items: center;
+
+    padding: 20px;
 }
 
-a {
-    color: var(--brand-primary);
-    text-decoration: none;
-    transition: color var(--transition);
+/* =========================================================
+   CARD
+========================================================= */
+
+.container {
+    width: 100%;
+ *  max-width: 420px;
 }
 
-a:hover {
-    color: var(--brand-secondary);
-}
-
-/* ==========================================================================
-   Composants
-   ========================================================================== */
 .card {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-sm);
-    padding: var(--spacing-lg);
-    transition: box-shadow var(--transition), transform var(--transition);
+   *background: var(--card);
+
+    bord*r: 1px solid var(--border);
+
+    b*rder-radius: 16px;
+
+    padding: 30px;
+
+    box-shadow: var(--shadow);
 }
 
-.card:hover {
-    box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
+/* =========================================================
+   TITLE
+========================================================= */
+
+.logo-title {
+    text-align: c*nter;
+    font-size: 28px;
+    mar*in-bottom: 8px;
 }
+
+.logo-subtitle *
+    text-align: center;
+    color: var(--muted);
+    margin-bottom: 24px;
+    font-size: 14px;
+}
+
+/* =========================================================
+   FORM
+========================================================= */
+
+label {
+    display: block;
+   *margin*bottom: 6*x;
+    margin-top: 12px;
+    font-*ize: 13px;
+}
+
+input,
+select {
+    *idth: 100%;
+    padding: 12px;
+
+*  *border-radius* 10px;
+
+   *border: 1px solid var(--border);
+
+*   background: transparent;
+
+*   color: var(--text);
+
+*   font-size: 14px;
+
+*   margin-bottom: 8px;
+*
+
+input:focus,
+*elect:focus {
+*   outline: none;
+    border-color* var(--brand-secondary);
+}
+
+/* =========================================================
+   BUTTONS
+========================================================= */
 
 .btn {
-    display: inline-block;
-    padding: var(--spacing-sm) var(--spacing-md);
     border: none;
-    border-radius: var(--radius);
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color var(--transition), opacity var(--transition);
+    bo*der-radius: 10px;
+
+    cursor: poi*ter;
+
+    padding: 13px;
+
+    font*weight: bold;
+
+    width: 100%;
+
+    margin-top: 16px;
 }
 
-.btn--primary {
+.btn-primary {
     background: var(--brand-primary);
-    color: #fff;
+    color: white;
 }
 
-.btn--primary:hover {
-    opacity: 0.9;
+.btn-primary:hover {
+    opacity: .9;
 }
 
-.btn--ghost {
-    background: transparent;
-    color: var(--text);
-    border: 1px solid var(--border);
+/* =========================================================
+   LINKS
+========================================================= */
+
+.auth-link {
+    display: block;
+    text-align: center;
+    margin-top: 18px;
+
+    color: var(--brand-secondary);
+    text-decoration: none;
 }
 
-.btn--ghost:hover {
-    background: var(--bg-alt);
+.auth-link:hover {
+    text-decoration: underline;
 }
+
+/* =========================================================
+   ALERTS
+========================================================= */
+
+.alert {
+    margin-bottom: 16px;
+    padding: 12px;
+    border-radius: 10px;
+}
+
+.alert-critical {
+    background: rgba(239,68,68,.15);
+    border: 1px solid rgba(239,68,68,.4);
+    color: #ff7b7b;
+}
+
+.hidden {
+    display: none;
+}
+
+/* =========================================================
+   MOBILE
+=
