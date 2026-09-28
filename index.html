@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>INDUS · Connexion</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INDUS · Connexion</title>
 
-    <link rel="stylesheet" href="css/styles.css" />
+<link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
 
 <div class="container">
+
     <div class="card">
 
         <h1 class="logo-title">⚡ INDUS</h1>
@@ -25,86 +27,106 @@
         <label for="login-tech">Technicien</label>
 
         <select id="login-tech">
-            <option value="">Chargement...</option>
+            <option value="">
+                Chargement...
+            </option>
         </select>
 
-        <label for="login-matricule">Matricule</label>
+        <label for="login-matricule">
+            Matricule
+        </label>
 
         <input
             type="password"
             id="login-matricule"
             placeholder="Votre matricule"
-            onkeydown="if(event.key==='Enter') doLogin()"
-        >
+            onkeydown="if(event.key==='Enter') doLogin()">
 
         <button
             class="btn btn-primary"
             onclick="doLogin()">
+
             Accéder au monitoring →
         </button>
 
-        <a href="register.html" class="auth-link">
-            ➕ Créer un compte
+        <a class="auth-link"
+           href="register.html">
+
+           ➕ Créer un compte
         </a>
 
     </div>
+
 </div>
 
 <script>
 (function () {
-    const theme = localStorage.getItem("theme") || "dark";
-    document.documentElement.setAttribute("data-theme", theme);
+    const theme =
+        localStorage.getItem("theme") || "dark";
+
+    document.documentElement.setAttribute(
+        "data-theme",
+        theme
+    );
 })();
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
 <script src="js/config.js"></script>
 <script src="js/auth.js"></script>
 
 <script>
-const db = supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY
-);
+
+const db =
+    supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_ANON_KEY
+    );
 
 if (getSession()) {
-    window.location.href = "dashboard.html";
+    window.location.href =
+        "dashboard.html";
 }
 
 async function loadTechnicians() {
 
     const select =
-        document.getElementById("login-tech");
+        document.getElementById(
+            "login-tech"
+        );
 
-    const { data, error } = await db
-        .from("technicians")
-        .select(
-            "id, first_name, last_name, matricule, role, is_active"
-        )
-        .eq("is_active", true)
-        .order("first_name");
+    const { data, error } =
+        await db
+            .from("technicians")
+            .select("*")
+            .eq("is_active", true)
+            .order("first_name");
 
-    if (error || !data || data.length === 0) {
+    if (error ||
+        !data ||
+        data.length === 0) {
 
         select.innerHTML =
-            '<option value="">Aucun technicien trouvé</option>';
+            '<option>Aucun technicien</option>';
 
         return;
     }
 
-    let options =
+    let html =
         '<option value="">— Sélectionner —</option>';
 
     data.forEach(t => {
 
-        options += `
+        html += `
             <option value="${t.id}">
-                ${t.first_name} ${t.last_name}
+                ${t.first_name}
+                ${t.last_name}
             </option>
         `;
     });
 
-    select.innerHTML = options;
+    select.innerHTML = html;
 }
 
 async function doLogin() {
@@ -113,34 +135,42 @@ async function doLogin() {
         .getElementById("login-error")
         .classList.add("hidden");
 
-    const tech =
-        document.getElementById("login-tech").value;
+    const technician =
+        document.getElementById(
+            "login-tech"
+        ).value;
 
     const matricule =
-        document.getElementById("login-matricule")
-        .value.trim();
+        document.getElementById(
+            "login-matricule"
+        ).value.trim();
 
-    if (!tech)
-        return showError("Sélectionnez un technicien.");
-
-    if (!matricule)
-        return showError("Entrez votre matricule.");
-
-    const { data, error } = await db
-        .from("technicians")
-        .select("*")
-        .eq("id", tech)
-        .eq("matricule", matricule)
-        .eq("is_active", true)
-        .maybeSingle();
-
-    if (error)
+    if (!technician)
         return showError(
-            "Erreur base : " + error.message
+            "Sélectionnez un technicien."
         );
 
+    if (!matricule)
+        return showError(
+            "Entrez votre matricule."
+        );
+
+    const { data, error } =
+        await db
+            .from("technicians")
+            .select("*")
+            .eq("id", technician)
+            .eq("matricule", matricule)
+            .eq("is_active", true)
+            .maybeSingle();
+
+    if (error)
+        return showError(error.message);
+
     if (!data)
-        return showError("Matricule incorrect.");
+        return showError(
+            "Matricule incorrect."
+        );
 
     setSession({
         id: data.id,
@@ -150,13 +180,16 @@ async function doLogin() {
         role: data.role
     });
 
-    window.location.href = "dashboard.html";
+    window.location.href =
+        "dashboard.html";
 }
 
 function showError(msg) {
 
     const box =
-        document.getElementById("login-error");
+        document.getElementById(
+            "login-error"
+        );
 
     box.textContent = msg;
     box.classList.remove("hidden");
@@ -166,6 +199,7 @@ document.addEventListener(
     "DOMContentLoaded",
     loadTechnicians
 );
+
 </script>
 
 </body>
