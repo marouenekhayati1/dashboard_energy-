@@ -138,6 +138,7 @@ async function openChecklist(id, record = null) {
             }
         }
     }
+    attachChecklistValidation();
 
     // Surligner l'item du menu cliqué
     document.querySelectorAll(".menu-item").forEach(mi => mi.classList.remove("active"));
@@ -169,6 +170,10 @@ function getPosteInterval(poste) {
     return { start, end };
 }
 
+function isChecklistFieldRequired(field) {
+    return field.required !== false && field.id !== "commentaire" && field.id !== "dosage_info";
+}
+
 function checklistMissingFields() {
     if (!activeChecklist) return [];
     const cfg = CHECKLISTS[activeChecklist.id];
@@ -177,7 +182,7 @@ function checklistMissingFields() {
     for (const section of cfg.sections) {
         if (section.night && activeChecklist.poste !== "nuit") continue;
         for (const field of section.fields) {
-            if (field.required === false || field.id === "commentaire" || field.id === "dosage_info") continue;
+            if (!isChecklistFieldRequired(field)) continue;
             let hasValue = false;
             if (field.type === "radio") {
                 hasValue = Boolean(document.querySelector('input[name="' + field.id + '"]:checked'));
@@ -192,10 +197,56 @@ function checklistMissingFields() {
     return missing;
 }
 
+function showChecklistErrors(missing) {
+    document.querySelectorAll("#checklist-zone .field-error").forEach((message) => {
+        message.hidden = true;
+    });
+    document.querySelectorAll("#checklist-zone [aria-invalid='true']").forEach((input) => {
+        input.removeAttribute("aria-invalid");
+    });
+
+    for (const field of missing) {
+        const message = document.getElementById("error_" + field.id);
+        if (message) message.hidden = false;
+
+        const inputs = field.type === "radio"
+            ? document.querySelectorAll('input[name="' + field.id + '"]')
+            : [document.getElementById(field.id)];
+        inputs.forEach((input) => input?.setAttribute("aria-invalid", "true"));
+    }
+}
+
+function attachChecklistValidation() {
+    const cfg = CHECKLISTS[activeChecklist.id];
+    for (const section of cfg.sections) {
+        if (section.night && activeChecklist.poste !== "nuit") continue;
+        for (const field of section.fields) {
+            if (!isChecklistFieldRequired(field)) continue;
+            const inputs = field.type === "radio"
+                ? document.querySelectorAll('input[name="' + field.id + '"]')
+                : [document.getElementById(field.id)];
+            inputs.forEach((input) => {
+                if (!input) return;
+                input.setAttribute("aria-describedby", "error_" + field.id);
+                const clearError = () => {
+                    if (!checklistMissingFields().some((missing) => missing.id === field.id)) {
+                        const message = document.getElementById("error_" + field.id);
+                        if (message) message.hidden = true;
+                        inputs.forEach((fieldInput) => fieldInput?.removeAttribute("aria-invalid"));
+                    }
+                };
+                input.addEventListener("input", clearError);
+                input.addEventListener("change", clearError);
+            });
+        }
+    }
+}
+
 function canLeaveChecklist() {
     const missing = checklistMissingFields();
     if (!missing.length) return true;
 
+    showChecklistErrors(missing);
     alert("Veuillez compléter tous les champs obligatoires avant de quitter cette check-list. Champ manquant : " + missing[0].label);
     const field = missing[0];
     const input = field.type === "radio"
@@ -249,6 +300,9 @@ function renderField(f) {
         ? '<div id="status_' + f.id + '" class="status"></div>'
         : "";
     const readonly = f.id === "dosage_info" ? " readonly" : "";
+    const error = isChecklistFieldRequired(f)
+        ? '<div class="field-error" id="error_' + f.id + '" hidden>Ce champ est obligatoire pour enregistrer.</div>'
+        : "";
 
     let input = "";
 
@@ -289,7 +343,7 @@ function renderField(f) {
         input = '<textarea rows="4" id="' + f.id + '" placeholder="Commentaire..."' + readonly + '></textarea>';
     }
 
-    return '<div class="form-group"><label>' + f.label + '</label>' + input + info + statusDiv + '</div>';
+    return '<div class="form-group"><label>' + f.label + '</label>' + input + error + info + statusDiv + '</div>';
 }
 
 
