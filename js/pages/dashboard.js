@@ -1,0 +1,330 @@
+document.addEventListener("DOMContentLoaded", () => {
+  if (!window.supabase) {
+    return;
+  }
+
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  window.db = db;
+
+  const session = getSession();
+  if (!session) {
+    window.location.href = "index.html";
+    return;
+  }
+
+  if (window.initTheme) {
+    window.initTheme();
+  }
+
+  const userName = session.first_name + " " + session.last_name;
+  const userInfo = document.querySelector(".user-info span");
+  if (userInfo) {
+    userInfo.textContent = "👤 " + userName;
+  }
+
+  const technicienField = document.getElementById("technicien");
+  if (technicienField) {
+    technicienField.value = userName;
+  }
+
+  function assignActionHandlers() {
+    document.querySelectorAll("[data-action]").forEach((element) => {
+      const action = element.dataset.action;
+
+      element.onclick = null;
+
+      if (action === "logout") {
+        element.addEventListener("click", logout);
+      }
+
+      if (action === "show-dashboard") {
+        element.addEventListener("click", showDashboard);
+      }
+
+      if (action === "open-history") {
+        element.addEventListener("click", openHistory);
+      }
+
+      if (action === "open-anomalies") {
+        element.addEventListener("click", openAnomalies);
+      }
+
+      if (action === "save-anomalie") {
+        element.addEventListener("click", saveAnomalie);
+      }
+    });
+
+    document.querySelectorAll("[data-action='open-checklist']").forEach((element) => {
+      element.addEventListener("click", () => {
+        const id = element.dataset.id;
+        if (id) openChecklist(id);
+      });
+    });
+
+    const historyFilter = document.getElementById("history-filter");
+    if (historyFilter) {
+      historyFilter.onchange = () => loadHistory();
+    }
+
+    const historyNb = document.getElementById("history-nb");
+    if (historyNb) {
+      historyNb.onchange = () => loadHistory();
+    }
+
+    const anoFilter = document.getElementById("ano-filter");
+    if (anoFilter) {
+      anoFilter.onchange = () => loadAnomalies();
+    }
+  }
+
+  function updateDateTime() {
+    const now = new Date();
+    const dateField = document.getElementById("date");
+    if (dateField) {
+      dateField.value = now.toLocaleDateString("fr-FR") + " " + now.toLocaleTimeString("fr-FR");
+    }
+
+    const poste = currentPoste();
+    const posteField = document.getElementById("poste");
+    if (posteField) {
+      posteField.value = poste;
+    }
+
+    const badge = document.getElementById("badge-poste");
+    if (badge) {
+      if (poste === "nuit") badge.textContent = "Poste : 🌙 Nuit";
+      else if (poste === "matin") badge.textContent = "Poste : 🌅 Matin";
+      else badge.textContent = "Poste : ☀️ Après-midi";
+    }
+
+    document.querySelectorAll(".night-only").forEach((el) => {
+      if (poste === "nuit") el.classList.remove("hidden");
+      else el.classList.add("hidden");
+    });
+  }
+
+  function mobileGo(dest) {
+    if (!dest) return;
+    if (dest === "home") showDashboard();
+    else if (dest === "history") openHistory();
+    else if (dest === "anomalies") openAnomalies();
+    else openChecklist(dest);
+
+    const mobileNav = document.getElementById("mobile-nav");
+    if (mobileNav) {
+      mobileNav.value = "";
+    }
+  }
+
+  function hideAllZones() {
+    const dashboard = document.getElementById("dashboard");
+    const checklistZone = document.getElementById("checklist-zone");
+    const historyZone = document.getElementById("history-zone");
+    const anomaliesZone = document.getElementById("anomalies-zone");
+
+    if (dashboard) dashboard.style.display = "none";
+    if (checklistZone) checklistZone.style.display = "none";
+    if (historyZone) historyZone.style.display = "none";
+    if (anomaliesZone) anomaliesZone.style.display = "none";
+  }
+
+  function openHistory() {
+    hideAllZones();
+    const historyZone = document.getElementById("history-zone");
+    if (historyZone) historyZone.style.display = "block";
+
+    document.querySelectorAll(".menu-item").forEach((mi) => mi.classList.remove("active"));
+    document.querySelectorAll(".sidebar .menu-item").forEach((mi) => {
+      const onclick = mi.getAttribute("onclick");
+      if (onclick && onclick.includes("openHistory")) mi.classList.add("active");
+    });
+
+    if (typeof loadHistory === "function") {
+      loadHistory();
+    }
+    window.scrollTo(0, 0);
+  }
+
+  const ANO_LABELS = {
+    water: "💧 Traitement d'eau",
+    surchauffee: "🔥 Eau surchauffée",
+    vapeur: "♨️ Chaudière vapeur",
+    vide: "🔧 Pompe à vide",
+    compresseurs: "💨 Compresseurs",
+    glacee: "❄️ Eau glacée",
+    thermo: "🌡️ Thermoventilation",
+    groupes: "⚡ Groupes électrogènes",
+    osmose: "💧 Station d'osmose"
+  };
+
+  function openAnomalies() {
+    hideAllZones();
+    const anomaliesZone = document.getElementById("anomalies-zone");
+    if (anomaliesZone) anomaliesZone.style.display = "block";
+
+    document.querySelectorAll(".menu-item").forEach((mi) => mi.classList.remove("active"));
+    document.querySelectorAll(".sidebar .menu-item").forEach((mi) => {
+      const onclick = mi.getAttribute("onclick");
+      if (onclick && onclick.includes("openAnomalies")) mi.classList.add("active");
+    });
+
+    if (typeof loadAnomalies === "function") {
+      loadAnomalies();
+    }
+    window.scrollTo(0, 0);
+  }
+
+  async function saveAnomalie() {
+    const title = document.getElementById("ano-title").value.trim();
+    if (!title) {
+      alert("⚠️ Veuillez saisir un titre.");
+      return;
+    }
+
+    const { error } = await db.from("anomalies").insert({
+      technician_id: session.id,
+      utility_name: document.getElementById("ano-utility").value || null,
+      title,
+      description: document.getElementById("ano-desc").value.trim(),
+      priority: document.getElementById("ano-priority").value,
+      status: "ouverte",
+      created_at: new Date().toISOString()
+    });
+
+    if (error) {
+      alert("Erreur : " + error.message);
+      return;
+    }
+
+    document.getElementById("ano-title").value = "";
+    document.getElementById("ano-desc").value = "";
+    alert("✅ Anomalie déclarée !");
+    loadAnomalies();
+  }
+
+  async function loadAnomalies() {
+    const tbody = document.getElementById("anomalies-body");
+    const info = document.getElementById("anomalies-info");
+    if (!tbody) return;
+
+    tbody.innerHTML = '<tr><td colspan="8">⏳ Chargement...</td></tr>';
+    const filtre = document.getElementById("ano-filter").value;
+
+    let query = db.from("anomalies")
+      .select("*, technicians(first_name, last_name)")
+      .order("created_at", { ascending: false })
+      .limit(200);
+
+    if (filtre) query = query.eq("status", filtre);
+
+    const { data, error } = await query;
+
+    if (error) {
+      tbody.innerHTML = '<tr><td colspan="8">❌ Erreur : ' + error.message + '</td></tr>';
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8">Aucune anomalie. 🎉</td></tr>';
+      if (info) info.textContent = "";
+      return;
+    }
+
+    const ouvertes = data.filter((a) => a.status !== "resolue").length;
+    if (info) {
+      info.textContent = data.length + " anomalie(s) — dont " + ouvertes + " non résolue(s)";
+    }
+
+    let html = "";
+    for (const a of data) {
+      const tech = a.technicians ? a.technicians.first_name + " " + a.technicians.last_name : "—";
+      const date = new Date(a.created_at).toLocaleString("fr-FR");
+      const resolue = a.resolved_at ? new Date(a.resolved_at).toLocaleString("fr-FR") : "—";
+      const label = a.utility_name ? (ANO_LABELS[a.utility_name] || a.utility_name) : "— Générale —";
+
+      const prioColor = a.priority === "Critique" ? "#ef4444" : a.priority === "Urgente" ? "#f59e0b" : "#94a3b8";
+      const statusColor = a.status === "ouverte" ? "#ef4444" : a.status === "en cours" ? "#f59e0b" : "#22c55e";
+
+      html += '<tr>'
+        + '<td style="white-space:nowrap">' + date + '</td>'
+        + '<td><strong>' + a.title + '</strong>'
+        + (a.description ? '<br><span style="color:var(--muted);font-size:12px">' + a.description + '</span>' : '')
+        + '</td>'
+        + '<td style="white-space:nowrap">' + label + '</td>'
+        + '<td style="color:' + prioColor + ';font-weight:bold">' + a.priority + '</td>'
+        + '<td style="color:' + statusColor + ';font-weight:bold">' + a.status + '</td>'
+        + '<td style="white-space:nowrap">' + tech + '</td>'
+        + '<td style="white-space:nowrap">' + resolue + '</td>'
+        + '<td style="white-space:nowrap">';
+
+      if (a.status === "ouverte") {
+        html += '<button class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="setStatus(' + a.id + ',\'en cours\')">🔧 En cours</button>';
+      } else if (a.status === "en cours") {
+        html += '<button class="btn btn-success" style="padding:6px 12px;font-size:12px" onclick="setStatus(' + a.id + ',\'resolue\')">✅ Résoudre</button>';
+      } else {
+        html += '<span style="color:#22c55e">✔</span>';
+      }
+
+      html += '</td></tr>';
+    }
+
+    tbody.innerHTML = html;
+  }
+
+  async function setStatus(id, status) {
+    const update = { status };
+    if (status === "resolue") update.resolved_at = new Date().toISOString();
+
+    const { error } = await db.from("anomalies").update(update).eq("id", id);
+    if (error) {
+      alert("Erreur : " + error.message);
+      return;
+    }
+    loadAnomalies();
+  }
+
+  const grid = document.getElementById("menu-grid");
+  if (grid && typeof CHECKLISTS !== "undefined") {
+    grid.innerHTML = "";
+    for (const id in CHECKLISTS) {
+      const c = CHECKLISTS[id];
+      grid.innerHTML += `
+        <div class="dashboard-card" onclick="openChecklist('${id}')">
+            <div class="dashboard-icon">${c.icon}</div>
+            <h3>${c.title}</h3>
+            <p>Check-list de contrôle.</p>
+        </div>`;
+    }
+  }
+
+  const themeButton = document.getElementById("theme-btn");
+  if (themeButton) {
+    themeButton.addEventListener("click", () => {
+      if (window.toggleTheme) {
+        window.toggleTheme();
+      }
+    });
+  }
+
+  const mobileNav = document.getElementById("mobile-nav");
+  if (mobileNav) {
+    mobileNav.addEventListener("change", (event) => {
+      const dest = event.target.value;
+      if (dest) {
+        mobileGo(dest);
+      }
+    });
+  }
+
+  assignActionHandlers();
+
+  window.mobileGo = mobileGo;
+  window.openHistory = openHistory;
+  window.openAnomalies = openAnomalies;
+  window.saveAnomalie = saveAnomalie;
+  window.loadAnomalies = loadAnomalies;
+  window.setStatus = setStatus;
+
+  updateDateTime();
+  setInterval(updateDateTime, 1000);
+});

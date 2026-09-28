@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>INDUS · Connexion</title>
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Lora:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/styles.css">
 </head>
 
@@ -20,38 +23,30 @@
             Monitoring des utilités · Connexion
         </p>
 
-        <div id="login-error"
-             class="alert alert-critical hidden">
-        </div>
+        <div id="login-error" class="alert alert-critical hidden"></div>
 
-        <label for="login-tech">Technicien</label>
+        <form id="login-form" novalidate>
+            <label for="login-tech">Technicien</label>
 
-        <select id="login-tech">
-            <option value="">
-                Chargement...
-            </option>
-        </select>
+            <select id="login-tech">
+                <option value="">Chargement...</option>
+            </select>
 
-        <label for="login-matricule">
-            Matricule
-        </label>
+            <label for="login-matricule">Matricule</label>
 
-        <input
-            type="password"
-            id="login-matricule"
-            placeholder="Votre matricule"
-            onkeydown="if(event.key==='Enter') doLogin()">
+            <input
+                type="password"
+                id="login-matricule"
+                placeholder="Votre matricule"
+                autocomplete="off"
+            >
 
-        <button
-            class="btn btn-primary"
-            onclick="doLogin()">
+            <button type="submit" class="btn btn-primary" id="login-button">
+                Accéder au monitoring →
+            </button>
+        </form>
 
-            Accéder au monitoring →
-        </button>
-
-        <a class="auth-link"
-           href="register.html">
-
+        <a class="auth-link" href="register.html">
            ➕ Créer un compte
         </a>
 
@@ -59,148 +54,12 @@
 
 </div>
 
-<script>
-(function () {
-    const theme =
-        localStorage.getItem("theme") || "dark";
-
-    document.documentElement.setAttribute(
-        "data-theme",
-        theme
-    );
-})();
-</script>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-
 <script src="js/config.js"></script>
 <script src="js/auth.js"></script>
-
-<script>
-
-const db =
-    supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_ANON_KEY
-    );
-
-if (getSession()) {
-    window.location.href =
-        "dashboard.html";
-}
-
-async function loadTechnicians() {
-
-    const select =
-        document.getElementById(
-            "login-tech"
-        );
-
-    const { data, error } =
-        await db
-            .from("technicians")
-            .select("*")
-            .eq("is_active", true)
-            .order("first_name");
-
-    if (error ||
-        !data ||
-        data.length === 0) {
-
-        select.innerHTML =
-            '<option>Aucun technicien</option>';
-
-        return;
-    }
-
-    let html =
-        '<option value="">— Sélectionner —</option>';
-
-    data.forEach(t => {
-
-        html += `
-            <option value="${t.id}">
-                ${t.first_name}
-                ${t.last_name}
-            </option>
-        `;
-    });
-
-    select.innerHTML = html;
-}
-
-async function doLogin() {
-
-    document
-        .getElementById("login-error")
-        .classList.add("hidden");
-
-    const technician =
-        document.getElementById(
-            "login-tech"
-        ).value;
-
-    const matricule =
-        document.getElementById(
-            "login-matricule"
-        ).value.trim();
-
-    if (!technician)
-        return showError(
-            "Sélectionnez un technicien."
-        );
-
-    if (!matricule)
-        return showError(
-            "Entrez votre matricule."
-        );
-
-    const { data, error } =
-        await db
-            .from("technicians")
-            .select("*")
-            .eq("id", technician)
-            .eq("matricule", matricule)
-            .eq("is_active", true)
-            .maybeSingle();
-
-    if (error)
-        return showError(error.message);
-
-    if (!data)
-        return showError(
-            "Matricule incorrect."
-        );
-
-    setSession({
-        id: data.id,
-        first_name: data.first_name,
-        last_name: data.last_name,
-        matricule: data.matricule,
-        role: data.role
-    });
-
-    window.location.href =
-        "dashboard.html";
-}
-
-function showError(msg) {
-
-    const box =
-        document.getElementById(
-            "login-error"
-        );
-
-    box.textContent = msg;
-    box.classList.remove("hidden");
-}
-
-document.addEventListener(
-    "DOMContentLoaded",
-    loadTechnicians
-);
-
-</script>
+<script src="js/services/supabaseService.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/pages/login.js"></script>
 
 </body>
 </html>

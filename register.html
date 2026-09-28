@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>INDUS · Créer un compte</title>
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Lora:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/styles.css">
 </head>
 
@@ -20,47 +23,27 @@
             Créer un nouveau compte technicien
         </p>
 
-        <div id="reg-error"
-             class="alert alert-critical hidden">
-        </div>
+        <div id="reg-error" class="alert alert-critical hidden"></div>
 
-        <label for="reg-first">
-            Prénom *
-        </label>
+        <form id="register-form" novalidate>
+            <label for="reg-first">Prénom *</label>
 
-        <input
-            type="text"
-            id="reg-first"
-            placeholder="Ex : Jean">
+            <input type="text" id="reg-first" placeholder="Ex : Jean">
 
-        <label for="reg-last">
-            Nom *
-        </label>
+            <label for="reg-last">Nom *</label>
 
-        <input
-            type="text"
-            id="reg-last"
-            placeholder="Ex : Dupont">
+            <input type="text" id="reg-last" placeholder="Ex : Dupont">
 
-        <label for="reg-matricule">
-            Matricule *
-        </label>
+            <label for="reg-matricule">Matricule *</label>
 
-        <input
-            type="text"
-            id="reg-matricule"
-            placeholder="Ex : T1234">
+            <input type="text" id="reg-matricule" placeholder="Ex : T1234">
 
-        <button
-            class="btn btn-primary"
-            onclick="doRegister()">
+            <button type="submit" class="btn btn-primary" id="register-button">
+                ✅ Créer mon compte
+            </button>
+        </form>
 
-            ✅ Créer mon compte
-        </button>
-
-        <a class="auth-link"
-           href="index.html">
-
+        <a class="auth-link" href="index.html">
            ← Retour à la connexion
         </a>
 
@@ -68,107 +51,12 @@
 
 </div>
 
-<script>
-(function () {
-    const theme =
-        localStorage.getItem("theme") || "dark";
-
-    document.documentElement.setAttribute(
-        "data-theme",
-        theme
-    );
-})();
-</script>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-
 <script src="js/config.js"></script>
-
-<script>
-
-const db =
-    supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_ANON_KEY
-    );
-
-async function doRegister() {
-
-    document
-        .getElementById("reg-error")
-        .classList.add("hidden");
-
-    const first =
-        document.getElementById(
-            "reg-first"
-        ).value.trim();
-
-    const last =
-        document.getElementById(
-            "reg-last"
-        ).value.trim();
-
-    const matricule =
-        document.getElementById(
-            "reg-matricule"
-        ).value.trim();
-
-    if (!first || !last)
-        return showError(
-            "Entrez votre prénom et votre nom."
-        );
-
-    if (!matricule)
-        return showError(
-            "Entrez un matricule."
-        );
-
-    const { data: existing } =
-        await db
-            .from("technicians")
-            .select("id")
-            .eq("matricule", matricule)
-            .maybeSingle();
-
-    if (existing)
-        return showError(
-            "Ce matricule est déjà utilisé."
-        );
-
-    const { error } =
-        await db
-            .from("technicians")
-            .insert({
-                first_name: first,
-                last_name: last,
-                matricule: matricule,
-                role: "technician",
-                is_active: true
-            });
-
-    if (error)
-        return showError(error.message);
-
-    alert(
-        "✅ Compte créé !"
-    );
-
-    window.location.href =
-        "index.html";
-}
-
-function showError(msg) {
-
-    const box =
-        document.getElementById(
-            "reg-error"
-        );
-
-    box.textContent = msg;
-    box.classList.remove("hidden");
-}
-
-</script>
+<script src="js/auth.js"></script>
+<script src="js/services/supabaseService.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/pages/register.js"></script>
 
 </body>
 </html>
