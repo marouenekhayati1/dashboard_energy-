@@ -47,6 +47,16 @@ function waterFormatValue(value) {
     return new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 2 }).format(value);
 }
 
+function getWaterMeterColumns() {
+    return Object.entries(WATER_METERS).flatMap(([utilityId, utility]) =>
+        Object.entries(utility.meters).map(([field, label]) => ({
+            key: `${utilityId}:${field}`,
+            label: label.replace(/^Compteur\s*/, ""),
+            installation: utility.label
+        }))
+    );
+}
+
 function waterEscapeHtml(value) {
     return String(value).replace(/[&<>"']/g, (character) => ({
         "&": "&amp;",
@@ -133,8 +143,14 @@ async function fetchWaterConsumptionRows() {
 
 function renderWaterConsumption() {
     const body = document.getElementById("water-consumption-body");
+    const head = document.getElementById("water-consumption-head");
     const info = document.getElementById("water-consumption-info");
     if (!waterConsumptionRows) return;
+
+    const columns = getWaterMeterColumns();
+    head.innerHTML = `<tr><th>Date</th>${columns.map((column) =>
+        `<th title="${column.label} - ${column.installation}">${column.label}<small>${column.installation}</small></th>`
+    ).join("")}</tr>`;
 
     const from = document.getElementById("water-consumption-from").value;
     const to = document.getElementById("water-consumption-to").value;
@@ -145,30 +161,38 @@ function renderWaterConsumption() {
     });
 
     if (rows.length === 0) {
-        body.innerHTML = '<tr><td colspan="7">Aucun relevé de compteur pour cette période.</td></tr>';
+        body.innerHTML = `<tr><td colspan="${columns.length + 1}">Aucun relevé de compteur pour cette période.</td></tr>`;
         info.textContent = "Aucun relevé trouvé pour la période sélectionnée.";
         return;
     }
 
-    info.textContent = `${rows.length} relevé(s) affiché(s). Consommation dans l'unité du compteur.`;
-    body.innerHTML = rows.map((row) => {
-        const isReset = row.consumption !== null && row.consumption < 0;
-        let consumption = "— (premier relevé)";
-        if (row.consumption !== null) {
-            consumption = isReset
-                ? '<span class="water-consumption-alert">À vérifier : index inférieur</span>'
-                : waterFormatValue(row.consumption);
-        }
+    const rowsByDay = new Map();
+    for (const row of rows) {
+        if (!rowsByDay.has(row.day)) rowsByDay.set(row.day, { date: row.date, meters: new Map() });
+        rowsByDay.get(row.day).meters.set(row.meterKey, row);
+    }
 
-        return `<tr>
-            <td>${waterFormatDate(row.date)}</td>
-            <td>${row.installation}</td>
-            <td>${row.meter}</td>
-            <td>${row.previousDate ? waterFormatDate(row.previousDate) : "—"}</td>
-            <td>${row.previousValue === null ? "—" : waterFormatValue(row.previousValue)}</td>
-            <td>${waterFormatValue(row.value)}</td>
-            <td>${consumption}</td>
-        </tr>`;
+    const days = [...rowsByDay.entries()].sort(([first], [second]) => second.localeCompare(first));
+    info.textContent = `${days.length} jour(s) affiché(s). Consommation dans l'unité du compteur.`;
+    body.innerHTML = days.map(([day, readings]) => {
+        const cells = columns.map((column) => {
+            const reading = readings.meters.get(column.key);
+            if (!reading) return "<td>—</td>";
+
+            const indexes = reading.previousValue === null
+                ? `Premier index : ${waterFormatValue(reading.value)}`
+                : `${waterFormatValue(reading.previousValue)} → ${waterFormatValue(reading.value)}`;
+
+            if (reading.consumption === null) {
+                return `<td><span>—</span><small>${indexes}</small></td>`;
+            }
+            if (reading.consumption < 0) {
+                return `<td><span class="water-consumption-alert">À vérifier</span><small>${indexes}</small></td>`;
+            }
+            return `<td><strong>${waterFormatValue(reading.consumption)}</strong><small>${indexes}</small></td>`;
+        }).join("");
+
+        return `<tr><td>${waterFormatDate(day)}</td>${cells}</tr>`;
     }).join("");
 }
 
@@ -182,7 +206,7 @@ async function loadWaterConsumption() {
         return;
     }
 
-    body.innerHTML = '<tr><td colspan="7">Chargement des relevés...</td></tr>';
+    body.innerHTML = `<tr><td colspan="${getWaterMeterColumns().length + 1}">Chargement des relevés...</td></tr>`;
     info.textContent = "Récupération des compteurs d'eau...";
 
     if (!waterConsumptionRequest) {
@@ -194,7 +218,7 @@ async function loadWaterConsumption() {
         renderWaterConsumption();
     } catch (error) {
         waterConsumptionRequest = null;
-        body.innerHTML = `<tr><td colspan="7">Erreur : ${waterEscapeHtml(error.message || "chargement impossible")}</td></tr>`;
+        body.innerHTML = `<tr><td colspan="${getWaterMeterColumns().length + 1}">Erreur : ${waterEscapeHtml(error.message || "chargement impossible")}</td></tr>`;
         info.textContent = "Impossible de charger les relevés.";
     }
 }
