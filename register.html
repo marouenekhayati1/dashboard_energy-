@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>INDUS · Créer un compte</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INDUS · Créer un compte</title>
 
-    <link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
 
 <div class="container">
+
     <div class="card">
 
         <h1 class="logo-title">⚡ INDUS</h1>
@@ -22,60 +24,73 @@
              class="alert alert-critical hidden">
         </div>
 
-        <label for="reg-first">Prénom *</label>
+        <label for="reg-first">
+            Prénom *
+        </label>
 
         <input
             type="text"
             id="reg-first"
-            placeholder="Ex : Jean"
-        >
+            placeholder="Ex : Jean">
 
-        <label for="reg-last">Nom *</label>
+        <label for="reg-last">
+            Nom *
+        </label>
 
         <input
             type="text"
             id="reg-last"
-            placeholder="Ex : Dupont"
-        >
+            placeholder="Ex : Dupont">
 
         <label for="reg-matricule">
-            Matricule * (servira de mot de passe)
+            Matricule *
         </label>
 
         <input
             type="text"
             id="reg-matricule"
-            placeholder="Ex : T1234"
-        >
+            placeholder="Ex : T1234">
 
         <button
             class="btn btn-primary"
             onclick="doRegister()">
+
             ✅ Créer mon compte
         </button>
 
-        <a href="index.html" class="auth-link">
-            ← Retour à la connexion
+        <a class="auth-link"
+           href="index.html">
+
+           ← Retour à la connexion
         </a>
 
     </div>
+
 </div>
 
 <script>
 (function () {
-    const theme = localStorage.getItem("theme") || "dark";
-    document.documentElement.setAttribute("data-theme", theme);
+    const theme =
+        localStorage.getItem("theme") || "dark";
+
+    document.documentElement.setAttribute(
+        "data-theme",
+        theme
+    );
 })();
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
 <script src="js/config.js"></script>
 
 <script>
-const db = supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY
-);
+
+const db =
+    supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_ANON_KEY
+    );
 
 async function doRegister() {
 
@@ -84,16 +99,19 @@ async function doRegister() {
         .classList.add("hidden");
 
     const first =
-        document.getElementById("reg-first")
-        .value.trim();
+        document.getElementById(
+            "reg-first"
+        ).value.trim();
 
     const last =
-        document.getElementById("reg-last")
-        .value.trim();
+        document.getElementById(
+            "reg-last"
+        ).value.trim();
 
     const matricule =
-        document.getElementById("reg-matricule")
-        .value.trim();
+        document.getElementById(
+            "reg-matricule"
+        ).value.trim();
 
     if (!first || !last)
         return showError(
@@ -105,52 +123,51 @@ async function doRegister() {
             "Entrez un matricule."
         );
 
-    if (matricule.length < 4)
-        return showError(
-            "Le matricule doit contenir au moins 4 caractères."
-        );
-
-    const { data: existing } = await db
-        .from("technicians")
-        .select("id")
-        .eq("matricule", matricule)
-        .maybeSingle();
+    const { data: existing } =
+        await db
+            .from("technicians")
+            .select("id")
+            .eq("matricule", matricule)
+            .maybeSingle();
 
     if (existing)
         return showError(
             "Ce matricule est déjà utilisé."
         );
 
-    const { error } = await db
-        .from("technicians")
-        .insert({
-            first_name: first,
-            last_name: last,
-            matricule: matricule,
-            role: "technician",
-            is_active: true
-        });
+    const { error } =
+        await db
+            .from("technicians")
+            .insert({
+                first_name: first,
+                last_name: last,
+                matricule: matricule,
+                role: "technician",
+                is_active: true
+            });
 
     if (error)
-        return showError(
-            "Erreur : " + error.message
-        );
+        return showError(error.message);
 
     alert(
-        "✅ Compte créé ! Vous pouvez maintenant vous connecter."
+        "✅ Compte créé !"
     );
 
-    window.location.href = "index.html";
+    window.location.href =
+        "index.html";
 }
 
 function showError(msg) {
 
     const box =
-        document.getElementById("reg-error");
+        document.getElementById(
+            "reg-error"
+        );
 
     box.textContent = msg;
     box.classList.remove("hidden");
 }
+
 </script>
 
 </body>
