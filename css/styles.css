@@ -1,167 +1,168 @@
 /* =========================================================
-   INDUS AUTH PAGES
+   INDUS - LOGIN & REGISTER
 ========================================================= */
 
 :root {
-    --brand-primary: #2*63eb;
-    --brand-secondary: #38bd*8;
-
-    --success: #22c55e;
-    --*arning: #f59e0b;
-    --danger: #ef*444;
-
-    --radius: 12px;
-
-    --b*: #0f172a;
+    --bg: #0f172a;
     --card: #1e293b;
-  * --text: #f8fafc;
-    --muted: #94*3b8;
+    --text: #f8fafc;
+    --muted: #94a3b8;
     --border: #334155;
 
-    -*shadow:
-        0 10px 25px rgba(0*0,0,.25);
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+
+    --danger: #ef4444;
+
+    --radius: 12px;
 }
 
-[data-theme="light"] *
+[data-theme="light"] {
     --bg: #f1f5f9;
-    --card: #f*ffff;
+    --card: #ffffff;
     --text: #0f172a;
-    --m*ted: #64748b;
-    --*order: #cbd5e1;
+    --muted: #64748b;
+    --border: #cbd5e1;
 }
 
 * {
-    box*sizing* border-box;
     margin: 0;
-    pa*ding: *;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body {
-    font*family: Arial, sans-serif;
-
-    ba*kground: var(--bg);
-    color: var*--text);
-
     min-height: 100vh;
 
-*   display* flex;
-    justify-content: center*
+    display: flex;
+    justify-content: center;
     align-items: center;
 
     padding: 20px;
+
+    background: var(--bg);
+    color: var(--text);
+
+    font-family: Arial, sans-serif;
 }
 
-/* =========================================================
-   CARD
-========================================================= */
+/* Container */
 
 .container {
     width: 100%;
- *  max-width: 420px;
+    max-width: 420px;
 }
+
+/* Card */
 
 .card {
-   *background: var(--card);
-
-    bord*r: 1px solid var(--border);
-
-    b*rder-radius: 16px;
-
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
     padding: 30px;
-
-    box-shadow: var(--shadow);
 }
 
-/* =========================================================
-   TITLE
-========================================================= */
+/* Title */
 
 .logo-title {
-    text-align: c*nter;
+    text-align: center;
     font-size: 28px;
-    mar*in-bottom: 8px;
+    margin-bottom: 6px;
 }
 
-.logo-subtitle *
+.logo-subtitle {
     text-align: center;
     color: var(--muted);
-    margin-bottom: 24px;
     font-size: 14px;
+    margin-bottom: 24px;
 }
 
-/* =========================================================
-   FORM
-========================================================= */
+/* Alerts */
+
+.alert {
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+}
+
+.alert-critical {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ff6b6b;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.hidden {
+    display: none;
+}
+
+/* Form */
 
 label {
     display: block;
-   *margin*bottom: 6*x;
-    margin-top: 12px;
-    font-*ize: 13px;
+    font-size: 13px;
+    margin-bottom: 6px;
+    color: var(--text);
 }
 
 input,
 select {
-    *idth: 100%;
+    width: 100%;
+    display: block;
+
     padding: 12px;
 
-*  *border-radius* 10px;
+    margin-bottom: 14px;
 
-   *border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
 
-*   background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 10px;
 
-*   color: var(--text);
-
-*   font-size: 14px;
-
-*   margin-bottom: 8px;
-*
-
-input:focus,
-*elect:focus {
-*   outline: none;
-    border-color* var(--brand-secondary);
+    font-size: 14px;
 }
 
-/* =========================================================
-   BUTTONS
-========================================================= */
+input:focus,
+select:focus {
+    outline: none;
+    border-color: #38bdf8;
+}
+
+/* Buttons */
 
 .btn {
-    border: none;
-    bo*der-radius: 10px;
-
-    cursor: poi*ter;
+    display: block;
+    width: 100%;
 
     padding: 13px;
 
-    font*weight: bold;
+    border: none;
+    border-radius: 10px;
 
-    width: 100%;
+    cursor: pointer;
 
-    margin-top: 16px;
+    font-size: 14px;
+    font-weight: bold;
 }
 
 .btn-primary {
-    background: var(--brand-primary);
+    background: var(--primary);
     color: white;
 }
 
 .btn-primary:hover {
-    opacity: .9;
+    background: var(--primary-hover);
 }
 
-/* =========================================================
-   LINKS
-========================================================= */
+/* Links */
 
 .auth-link {
     display: block;
     text-align: center;
+
     margin-top: 18px;
 
-    color: var(--brand-secondary);
+    color: #38bdf8;
     text-decoration: none;
 }
 
@@ -169,26 +170,27 @@ input:focus,
     text-decoration: underline;
 }
 
-/* =========================================================
-   ALERTS
-========================================================= */
+/* Mobile */
 
-.alert {
-    margin-bottom: 16px;
-    padding: 12px;
-    border-radius: 10px;
+@media (max-width: 600px) {
+
+    body {
+        padding: 12px;
+        align-items: flex-start;
+    }
+
+    .card {
+        padding: 20px;
+        margin-top: 20px;
+    }
+
+    .logo-title {
+        font-size: 22px;
+    }
+
+    input,
+    select,
+    .btn {
+        min-height: 46px;
+    }
 }
-
-.alert-critical {
-    background: rgba(239,68,68,.15);
-    border: 1px solid rgba(239,68,68,.4);
-    color: #ff7b7b;
-}
-
-.hidden {
-    display: none;
-}
-
-/* =========================================================
-   MOBILE
-=
