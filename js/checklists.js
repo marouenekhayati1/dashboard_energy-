@@ -524,9 +524,11 @@ registerChecklist("osmose", {
 
 // Emballer openChecklist pour brancher les calculs après affichage
 const _openChecklistBase = openChecklist;
-openChecklist = function(id) {
-    _openChecklistBase(id);
+openChecklist = async function(id, record) {
+    const opened = await _openChecklistBase(id, record);
+    if (!opened) return false;
     attachCalculs(id);
+    return true;
 };
 
 

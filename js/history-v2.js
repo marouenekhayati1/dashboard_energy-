@@ -38,7 +38,7 @@ async function loadHistoryV2() {
     const info = document.getElementById("history-v2-info");
     if (!body || !window.db) return;
 
-    body.innerHTML = '<tr><td colspan="5">⏳ Chargement...</td></tr>';
+    body.innerHTML = '<tr><td colspan="6">⏳ Chargement...</td></tr>';
     const filter = document.getElementById("history-v2-filter").value;
     const limitValue = document.getElementById("history-v2-nb").value;
 
@@ -51,14 +51,14 @@ async function loadHistoryV2() {
 
     const { data, error } = await query;
     if (error) {
-        body.innerHTML = `<tr><td colspan="5">❌ Erreur : ${escapeHistoryV2(error.message)}</td></tr>`;
+        body.innerHTML = `<tr><td colspan="6">❌ Erreur : ${escapeHistoryV2(error.message)}</td></tr>`;
         info.textContent = "Impossible de charger l'historique.";
         return;
     }
 
     historyV2Records = data || [];
     if (historyV2Records.length === 0) {
-        body.innerHTML = '<tr><td colspan="5">Aucun relevé trouvé.</td></tr>';
+        body.innerHTML = '<tr><td colspan="6">Aucun relevé trouvé.</td></tr>';
         info.textContent = "";
         return;
     }
@@ -73,12 +73,14 @@ async function loadHistoryV2() {
         const label = HISTO_V2_LABELS[record.utility_name] || record.utility_name || "—";
         const fieldCount = record.data ? Object.keys(record.data).length : 0;
 
+        const canEdit = getSession()?.id === record.technician_id;
         return `<tr>
             <td style="white-space:nowrap">${escapeHistoryV2(date)}</td>
             <td style="white-space:nowrap">${escapeHistoryV2(label)}</td>
             <td>${escapeHistoryV2(record.poste || "—")}</td>
             <td style="white-space:nowrap">${escapeHistoryV2(technician || "—")}</td>
             <td><button class="btn btn-secondary" type="button" data-history-v2-detail="${index}" style="padding:6px 12px;font-size:12px">👁️ Voir (${fieldCount})</button></td>
+            <td>${canEdit ? `<button class="btn btn-secondary" type="button" data-history-v2-edit="${index}" style="padding:6px 12px;font-size:12px">Modifier</button>` : "—"}</td>
         </tr>`;
     }).join("");
 }
@@ -115,6 +117,11 @@ document.addEventListener("DOMContentLoaded", () => {
     body?.addEventListener("click", (event) => {
         const button = event.target.closest("[data-history-v2-detail]");
         if (button) viewHistoryV2Detail(Number(button.dataset.historyV2Detail), button);
+        const editButton = event.target.closest("[data-history-v2-edit]");
+        if (editButton) {
+            const record = historyV2Records[Number(editButton.dataset.historyV2Edit)];
+            if (record) editChecklistRecord(record.id);
+        }
     });
 
     document.getElementById("history-v2-filter")?.addEventListener("change", loadHistoryV2);

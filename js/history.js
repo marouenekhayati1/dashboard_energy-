@@ -47,13 +47,13 @@ async function loadHistory() {
     const { data, error } = await query;
 
     if (error) {
-        tbody.innerHTML = '<tr><td colspan="4">❌ Erreur : ' + error.message + '</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5">❌ Erreur : ' + error.message + '</td></tr>';
         return;
     }
 
     if (!data || data.length === 0) {
         thead.innerHTML = "";
-        tbody.innerHTML = '<tr><td colspan="4">Aucun relevé trouvé.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5">Aucun relevé trouvé.</td></tr>';
         info.textContent = "";
         return;
     }
@@ -73,7 +73,8 @@ async function loadHistory() {
     let th = '<th>Date et heure</th>'
            + '<th>Check-list</th>'
            + '<th>Poste</th>'
-           + '<th>Technicien</th>';
+            + '<th>Technicien</th>'
+            + '<th>Action</th>';
     for (const col of columns) {
         th += '<th>' + getLabel(col) + '</th>';
     }
@@ -92,7 +93,10 @@ async function loadHistory() {
               + '<td style="white-space:nowrap">' + date + '</td>'
               + '<td style="white-space:nowrap">' + label + '</td>'
               + '<td>' + (r.poste || "—") + '</td>'
-              + '<td style="white-space:nowrap">' + tech + '</td>';
+              + '<td style="white-space:nowrap">' + tech + '</td>'
+              + '<td>' + (getSession()?.id === r.technician_id
+                  ? '<button class="btn btn-secondary" type="button" data-edit-measurement="' + encodeURIComponent(r.id) + '">Modifier</button>'
+                  : '—') + '</td>';
 
         for (const col of columns) {
             const val = (r.data && r.data[col] !== undefined && r.data[col] !== "") ? r.data[col] : "—";
@@ -102,3 +106,10 @@ async function loadHistory() {
     }
     tbody.innerHTML = html;
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("history-body")?.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-edit-measurement]");
+        if (button) editChecklistRecord(decodeURIComponent(button.dataset.editMeasurement));
+    });
+});

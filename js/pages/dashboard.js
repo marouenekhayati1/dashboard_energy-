@@ -34,7 +34,13 @@ document.addEventListener("DOMContentLoaded", () => {
       element.onclick = null;
 
       if (action === "logout") {
-        element.addEventListener("click", logout);
+        element.addEventListener("click", (event) => {
+          if (!canLeaveChecklist()) {
+            event.preventDefault();
+            return;
+          }
+          logout();
+        });
       }
 
       if (action === "show-dashboard") {
@@ -127,6 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function hideAllZones() {
+    if (!canLeaveChecklist()) return false;
     if (typeof closeHistoryV2Detail === "function") closeHistoryV2Detail();
 
     const dashboard = document.getElementById("dashboard");
@@ -142,10 +149,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (historyV2Zone) historyV2Zone.style.display = "none";
     if (waterConsumptionZone) waterConsumptionZone.style.display = "none";
     if (anomaliesZone) anomaliesZone.style.display = "none";
+    return true;
   }
 
   function openHistory() {
-    hideAllZones();
+    if (!hideAllZones()) return;
     const historyZone = document.getElementById("history-zone");
     if (historyZone) historyZone.style.display = "block";
 
@@ -162,7 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function openHistoryV2() {
-    hideAllZones();
+    if (!hideAllZones()) return;
     const zone = document.getElementById("history-v2-zone");
     if (zone) zone.style.display = "block";
 
@@ -177,7 +185,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function openWaterConsumption() {
-    hideAllZones();
+    if (!hideAllZones()) return;
     const zone = document.getElementById("water-consumption-zone");
     if (zone) zone.style.display = "block";
 
@@ -204,7 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   function openAnomalies() {
-    hideAllZones();
+    if (!hideAllZones()) return;
     const anomaliesZone = document.getElementById("anomalies-zone");
     if (anomaliesZone) anomaliesZone.style.display = "block";
 
