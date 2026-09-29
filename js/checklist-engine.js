@@ -467,16 +467,27 @@ async function saveChecklist(id) {
     }
 
     const session = getSession();
-    let result;
+    let result = { error: null };
     if (activeChecklist.recordId) {
-        let updateQuery = db.from("measurements").update({ data: values })
-            .eq("id", activeChecklist.recordId);
-        if (session.role !== "admin") updateQuery = updateQuery.eq("technician_id", session.id);
-        result = await updateQuery.select("id").maybeSingle();
-        if (!result.error && !result.data) {
-            alert(session.role === "admin"
-                ? "Impossible de modifier ce relevé. Vérifiez les permissions de la base de données."
-                : "Vous pouvez uniquement modifier vos propres saisies.");
+        const { data, error } = await db.functions.invoke("update-measurement", {
+            body: {
+                recordId: activeChecklist.recordId,
+                technicianId: session.id,
+                matricule: session.matricule,
+                data: values
+            }
+        });
+        if (error || !data?.success) {
+            let message = data?.error || error?.message || "Impossible de modifier ce relevé.";
+            if (error?.context && typeof error.context.json === "function") {
+                try {
+                    const response = await error.context.json();
+                    message = response.error || message;
+                } catch {
+                    // Le message initial reste affiché si la réponse n'est pas JSON.
+                }
+            }
+            alert("Erreur : " + message);
             return;
         }
     } else {

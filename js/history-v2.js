@@ -40,7 +40,7 @@ async function loadHistoryV2() {
     const info = document.getElementById("history-v2-info");
     if (!body || !window.db) return;
 
-    body.innerHTML = '<tr><td colspan="6">⏳ Chargement...</td></tr>';
+    body.innerHTML = '<tr><td colspan="7">⏳ Chargement...</td></tr>';
     const filter = document.getElementById("history-v2-filter").value;
     const limitValue = document.getElementById("history-v2-nb").value;
 
@@ -53,14 +53,14 @@ async function loadHistoryV2() {
 
     const { data, error } = await query;
     if (error) {
-        body.innerHTML = `<tr><td colspan="6">❌ Erreur : ${escapeHistoryV2(error.message)}</td></tr>`;
+        body.innerHTML = `<tr><td colspan="7">❌ Erreur : ${escapeHistoryV2(error.message)}</td></tr>`;
         info.textContent = "Impossible de charger l'historique.";
         return;
     }
 
     historyV2Records = data || [];
     if (historyV2Records.length === 0) {
-        body.innerHTML = '<tr><td colspan="6">Aucun relevé trouvé.</td></tr>';
+        body.innerHTML = '<tr><td colspan="7">Aucun relevé trouvé.</td></tr>';
         info.textContent = "";
         return;
     }
@@ -73,11 +73,12 @@ async function loadHistoryV2() {
         const timestamp = new Date(record.recorded_at);
         const date = Number.isNaN(timestamp.getTime()) ? "Date inconnue" : timestamp.toLocaleString("fr-FR");
         const label = HISTO_V2_LABELS[record.utility_name] || record.utility_name || "—";
-        const fieldCount = record.data ? Object.keys(record.data).length : 0;
+        const fieldCount = record.data ? Object.keys(record.data).filter((key) => key !== "_modifications").length : 0;
 
         const session = getSession();
         const canEdit = session?.role === "admin" || session?.id === record.technician_id;
         return `<tr>
+            <td>${renderModificationAudit(record.data)}</td>
             <td style="white-space:nowrap">${escapeHistoryV2(date)}</td>
             <td style="white-space:nowrap">${escapeHistoryV2(label)}</td>
             <td>${escapeHistoryV2(record.poste || "—")}</td>
@@ -95,7 +96,9 @@ function viewHistoryV2Detail(index, trigger) {
     historyV2LastTrigger = trigger;
     const detailBody = document.getElementById("history-v2-detail-body");
     const modal = document.getElementById("history-v2-detail-modal");
-    const fields = record.data && typeof record.data === "object" ? Object.entries(record.data) : [];
+    const fields = record.data && typeof record.data === "object"
+        ? Object.entries(record.data).filter(([key]) => key !== "_modifications")
+        : [];
 
     detailBody.innerHTML = fields.length
         ? fields.map(([key, value]) => {

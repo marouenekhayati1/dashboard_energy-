@@ -27,13 +27,35 @@ function getLabel(id) {
     return id; // champ inconnu → on affiche l'id brut
 }
 
+function renderModificationAudit(data) {
+    const modifications = Array.isArray(data?._modifications) ? data._modifications : [];
+    if (!modifications.length) return "—";
+
+    return modifications.map((modification) => {
+        const name = [modification.first_name, modification.last_name].filter(Boolean).join(" ") || "Nom inconnu";
+        const timestamp = new Date(modification.edited_at);
+        const date = Number.isNaN(timestamp.getTime()) ? "Date inconnue" : timestamp.toLocaleString("fr-FR");
+        return `<div>${escapeHistoryHtml(name)}<br><small>${escapeHistoryHtml(date)}</small></div>`;
+    }).join("");
+}
+
+function escapeHistoryHtml(value) {
+    return String(value).replace(/[&<>"']/g, (character) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[character]);
+}
+
 
 async function loadHistory() {
     const thead = document.getElementById("history-thead");
     const tbody = document.getElementById("history-body");
     const info = document.getElementById("history-info");
 
-    tbody.innerHTML = '<tr><td colspan="4">⏳ Chargement...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6">⏳ Chargement...</td></tr>';
 
     const filtre = document.getElementById("history-filter").value;
     const nbValue = document.getElementById("history-nb").value;
@@ -49,13 +71,13 @@ async function loadHistory() {
     const { data, error } = await query;
 
     if (error) {
-        tbody.innerHTML = '<tr><td colspan="5">❌ Erreur : ' + error.message + '</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6">❌ Erreur : ' + error.message + '</td></tr>';
         return;
     }
 
     if (!data || data.length === 0) {
         thead.innerHTML = "";
-        tbody.innerHTML = '<tr><td colspan="5">Aucun relevé trouvé.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6">Aucun relevé trouvé.</td></tr>';
         info.textContent = "";
         return;
     }
@@ -67,12 +89,13 @@ async function loadHistory() {
     for (const r of data) {
         if (!r.data) continue;
         for (const key in r.data) {
-            if (!columns.includes(key)) columns.push(key);
+            if (key !== "_modifications" && !columns.includes(key)) columns.push(key);
         }
     }
 
     // 2. En-tête : colonnes fixes + colonnes de détails
-    let th = '<th>Date et heure</th>'
+        let th = '<th>Modifié par / le</th>'
+            + '<th>Date et heure</th>'
            + '<th>Check-list</th>'
            + '<th>Poste</th>'
             + '<th>Technicien</th>'
@@ -94,6 +117,7 @@ async function loadHistory() {
         const label = HISTO_LABELS[r.utility_name] || r.utility_name;
 
         html += '<tr>'
+              + '<td>' + renderModificationAudit(r.data) + '</td>'
               + '<td style="white-space:nowrap">' + date + '</td>'
               + '<td style="white-space:nowrap">' + label + '</td>'
               + '<td>' + (r.poste || "—") + '</td>'
