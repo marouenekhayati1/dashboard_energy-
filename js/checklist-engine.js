@@ -309,14 +309,16 @@ async function editChecklistRecord(recordId) {
         return;
     }
 
-    const { data, error } = await db.from("measurements")
+    let query = db.from("measurements")
         .select("*")
-        .eq("id", recordId)
-        .eq("technician_id", session.id)
-        .maybeSingle();
+        .eq("id", recordId);
+    if (session.role !== "admin") query = query.eq("technician_id", session.id);
+    const { data, error } = await query.maybeSingle();
 
     if (error || !data) {
-        alert(error ? "Erreur : " + error.message : "Vous pouvez uniquement modifier vos propres saisies.");
+        alert(error ? "Erreur : " + error.message : session.role === "admin"
+            ? "Ce relevé est introuvable."
+            : "Vous pouvez uniquement modifier vos propres saisies.");
         return;
     }
     await openChecklist(data.utility_name, data);
@@ -467,13 +469,14 @@ async function saveChecklist(id) {
     const session = getSession();
     let result;
     if (activeChecklist.recordId) {
-        result = await db.from("measurements").update({ data: values })
-            .eq("id", activeChecklist.recordId)
-            .eq("technician_id", session.id)
-            .select("id")
-            .maybeSingle();
+        let updateQuery = db.from("measurements").update({ data: values })
+            .eq("id", activeChecklist.recordId);
+        if (session.role !== "admin") updateQuery = updateQuery.eq("technician_id", session.id);
+        result = await updateQuery.select("id").maybeSingle();
         if (!result.error && !result.data) {
-            alert("Vous pouvez uniquement modifier vos propres saisies.");
+            alert(session.role === "admin"
+                ? "Impossible de modifier ce relevé. Vérifiez les permissions de la base de données."
+                : "Vous pouvez uniquement modifier vos propres saisies.");
             return;
         }
     } else {

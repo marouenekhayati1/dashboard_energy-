@@ -85,6 +85,8 @@ async function loadHistory() {
     // 3. Lignes : valeurs directement affichées
     let html = "";
     for (const r of data) {
+        const session = getSession();
+        const canEdit = session?.role === "admin" || session?.id === r.technician_id;
         const tech = r.technicians
             ? r.technicians.first_name + " " + r.technicians.last_name
             : "—";
@@ -96,7 +98,7 @@ async function loadHistory() {
               + '<td style="white-space:nowrap">' + label + '</td>'
               + '<td>' + (r.poste || "—") + '</td>'
               + '<td style="white-space:nowrap">' + tech + '</td>'
-              + '<td>' + (getSession()?.id === r.technician_id
+              + '<td>' + (canEdit
                   ? '<button class="btn btn-success" type="button" data-edit-measurement="' + encodeURIComponent(r.id) + '">Modifier</button>'
                   : '—') + '</td>';
 

@@ -75,7 +75,8 @@ async function loadHistoryV2() {
         const label = HISTO_V2_LABELS[record.utility_name] || record.utility_name || "—";
         const fieldCount = record.data ? Object.keys(record.data).length : 0;
 
-        const canEdit = getSession()?.id === record.technician_id;
+        const session = getSession();
+        const canEdit = session?.role === "admin" || session?.id === record.technician_id;
         return `<tr>
             <td style="white-space:nowrap">${escapeHistoryV2(date)}</td>
             <td style="white-space:nowrap">${escapeHistoryV2(label)}</td>
