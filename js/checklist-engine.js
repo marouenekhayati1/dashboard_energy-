@@ -137,6 +137,11 @@ async function openChecklist(id, record = null) {
                 const option = Array.from(document.querySelectorAll('input[name="' + field.id + '"]'))
                     .find((input) => input.value === String(value));
                 if (option) option.checked = true;
+            } else if (field.type === "checkbox-group") {
+                const selectedValues = Array.isArray(value) ? value : [value];
+                document.querySelectorAll('input[name="' + field.id + '"]').forEach((input) => {
+                    input.checked = selectedValues.includes(input.value);
+                });
             } else if (field.type === "checkbox") {
                 const input = document.getElementById(field.id);
                 if (input) input.checked = value === field.label2;
@@ -197,6 +202,8 @@ function checklistMissingFields() {
             let hasValue = false;
             if (field.type === "radio") {
                 hasValue = Boolean(document.querySelector('input[name="' + field.id + '"]:checked'));
+            } else if (field.type === "checkbox-group") {
+                hasValue = Boolean(document.querySelector('input[name="' + field.id + '"]:checked'));
             } else if (field.type === "checkbox") {
                 hasValue = Boolean(document.getElementById(field.id)?.checked);
             } else {
@@ -220,7 +227,7 @@ function showChecklistErrors(missing) {
         const message = document.getElementById("error_" + field.id);
         if (message) message.hidden = false;
 
-        const inputs = field.type === "radio"
+        const inputs = field.type === "radio" || field.type === "checkbox-group"
             ? document.querySelectorAll('input[name="' + field.id + '"]')
             : [document.getElementById(field.id)];
         inputs.forEach((input) => input?.setAttribute("aria-invalid", "true"));
@@ -233,7 +240,7 @@ function attachChecklistValidation() {
         if (section.night && activeChecklist.poste !== "nuit") continue;
         for (const field of section.fields) {
             if (!isChecklistFieldRequired(field)) continue;
-            const inputs = field.type === "radio"
+            const inputs = field.type === "radio" || field.type === "checkbox-group"
                 ? document.querySelectorAll('input[name="' + field.id + '"]')
                 : [document.getElementById(field.id)];
             inputs.forEach((input) => {
@@ -260,7 +267,7 @@ function canLeaveChecklist() {
     showChecklistErrors(missing);
     alert("Veuillez compléter tous les champs obligatoires avant de quitter cette check-list. Champ manquant : " + missing[0].label);
     const field = missing[0];
-    const input = field.type === "radio"
+    const input = field.type === "radio" || field.type === "checkbox-group"
         ? document.querySelector('input[name="' + field.id + '"]')
         : document.getElementById(field.id);
     input?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -344,6 +351,17 @@ function renderField(f) {
         });
         input += '</div>';
     }
+    else if (f.type === "checkbox-group") {
+        input = '<div class="radio-group">';
+        f.options.forEach((opt, i) => {
+            const oid = f.id + "_" + i;
+            input += '<div class="radio-option">'
+                  + '<input type="checkbox" name="' + f.id + '" id="' + oid + '" value="' + opt + '">'
+                  + '<label for="' + oid + '">' + opt + '</label>'
+                  + '</div>';
+        });
+        input += '</div>';
+    }
     else if (f.type === "checkbox") {
         input = '<div class="radio-group"><div class="radio-option">'
               + '<input type="checkbox" id="' + f.id + '">'
@@ -396,6 +414,12 @@ async function saveChecklist(id) {
     for (const section of cfg.sections) {
         if (section.night && activeChecklist.poste !== "nuit") continue;
         for (const f of section.fields) {
+            if (f.type === "checkbox-group") {
+                values[f.id] = Array.from(document.querySelectorAll('input[name="' + f.id + '"]:checked'))
+                    .map((input) => input.value);
+                continue;
+            }
+
             const el = document.getElementById(f.id);
             if (!el) {
                 if (activeChecklist.data[f.id] !== undefined) values[f.id] = activeChecklist.data[f.id];

@@ -323,7 +323,7 @@ registerChecklist("glacee", {
                 { id: "trane_bp1", type: "number", label: "Pression BP Compresseur 1 (bar)", hint: "Réf : 6 bar" },
                 { id: "trane_hp2", type: "number", label: "Pression HP Compresseur 2 (bar)", hint: "Réf : 12 bar" },
                 { id: "trane_bp2", type: "number", label: "Pression BP Compresseur 2 (bar)", hint: "Réf : 6 bar" },
-                { id: "trane_compresseur", type: "radio", label: "Compresseur en fonctionnement", options: ["Compresseur 1", "Compresseur 2"] },
+                { id: "trane_compresseur", type: "checkbox-group", label: "Compresseurs en fonctionnement", options: ["Compresseur 1", "Compresseur 2"] },
                 { id: "trane_consigne", type: "number", label: "Consigne", hint: "Réf : 12" },
                 { id: "trane_amont", type: "number", label: "Température en amont (°C)" },
                 { id: "trane_aval", type: "number", label: "Température en aval (°C)" }
@@ -357,7 +357,7 @@ registerChecklist("glacee", {
                 { id: "york_bp1", type: "number", label: "Pression BP Compresseur 1 (bar)", hint: "Réf : 6 bar" },
                 { id: "york_hp2", type: "number", label: "Pression HP Compresseur 2 (bar)", hint: "Réf : 12 bar" },
                 { id: "york_bp2", type: "number", label: "Pression BP Compresseur 2 (bar)", hint: "Réf : 6 bar" },
-                { id: "york_compresseur", type: "radio", label: "Compresseur en fonctionnement", options: ["Compresseur 1", "Compresseur 2"] },
+                { id: "york_compresseur", type: "checkbox-group", label: "Compresseurs en fonctionnement", options: ["Compresseur 1", "Compresseur 2"] },
                 { id: "york_consigne", type: "number", label: "Consigne", hint: "Réf : 12" },
                 { id: "york_amont", type: "number", label: "Température en amont (°C)" },
                 { id: "york_aval", type: "number", label: "Température en aval (°C)" }
