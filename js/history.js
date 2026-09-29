@@ -97,7 +97,7 @@ async function loadHistory() {
               + '<td>' + (r.poste || "—") + '</td>'
               + '<td style="white-space:nowrap">' + tech + '</td>'
               + '<td>' + (getSession()?.id === r.technician_id
-                  ? '<button class="btn btn-secondary" type="button" data-edit-measurement="' + encodeURIComponent(r.id) + '">Modifier</button>'
+                  ? '<button class="btn btn-success" type="button" data-edit-measurement="' + encodeURIComponent(r.id) + '">Modifier</button>'
                   : '—') + '</td>';
 
         for (const col of columns) {

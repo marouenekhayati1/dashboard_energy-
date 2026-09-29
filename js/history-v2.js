@@ -82,7 +82,7 @@ async function loadHistoryV2() {
             <td>${escapeHistoryV2(record.poste || "—")}</td>
             <td style="white-space:nowrap">${escapeHistoryV2(technician || "—")}</td>
             <td><button class="btn btn-secondary" type="button" data-history-v2-detail="${index}" style="padding:6px 12px;font-size:12px">👁️ Voir (${fieldCount})</button></td>
-            <td>${canEdit ? `<button class="btn btn-secondary" type="button" data-history-v2-edit="${index}" style="padding:6px 12px;font-size:12px">Modifier</button>` : "—"}</td>
+            <td>${canEdit ? `<button class="btn btn-success" type="button" data-history-v2-edit="${index}" style="padding:6px 12px;font-size:12px">Modifier</button>` : "—"}</td>
         </tr>`;
     }).join("");
 }
