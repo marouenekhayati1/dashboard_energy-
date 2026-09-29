@@ -25,6 +25,7 @@ function currentPoste() {
 function showDashboard() {
     if (!canLeaveChecklist()) return;
     activeChecklist = null;
+    rememberDashboardView("dashboard");
 
     document.getElementById("dashboard").style.display = "block";
 
@@ -43,6 +44,15 @@ function showDashboard() {
     document.querySelectorAll(".menu-item").forEach(mi => mi.classList.remove("active"));
     const first = document.querySelector(".sidebar .menu-item");
     if (first) first.classList.add("active");
+}
+
+function cancelChecklist() {
+    activeChecklist = null;
+    showDashboard();
+}
+
+function rememberDashboardView(view) {
+    sessionStorage.setItem("dashboard-view", view);
 }
 
 
@@ -106,7 +116,7 @@ async function openChecklist(id, record = null) {
 
     html += `
     <div class="actions">
-        <button class="btn btn-secondary" onclick="showDashboard()">Annuler</button>
+        <button class="btn btn-secondary" onclick="cancelChecklist()">Annuler</button>
         <button class="btn btn-success" onclick="saveChecklist('${id}')">💾 ${record ? "Enregistrer les modifications" : "Enregistrer"}</button>
     </div>`;
 
@@ -117,6 +127,7 @@ async function openChecklist(id, record = null) {
         poste,
         data: record && record.data && typeof record.data === "object" ? record.data : {}
     };
+    rememberDashboardView("dashboard");
 
     for (const section of cfg.sections) {
         for (const field of section.fields) {

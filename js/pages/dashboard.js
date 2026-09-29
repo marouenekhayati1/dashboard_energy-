@@ -154,6 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function openHistory() {
     if (!hideAllZones()) return;
+    rememberDashboardView("history");
     const historyZone = document.getElementById("history-zone");
     if (historyZone) historyZone.style.display = "block";
 
@@ -171,6 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function openHistoryV2() {
     if (!hideAllZones()) return;
+    rememberDashboardView("history-v2");
     const zone = document.getElementById("history-v2-zone");
     if (zone) zone.style.display = "block";
 
@@ -186,6 +188,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function openWaterConsumption() {
     if (!hideAllZones()) return;
+    rememberDashboardView("water-consumption");
     const zone = document.getElementById("water-consumption-zone");
     if (zone) zone.style.display = "block";
 
@@ -213,6 +216,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function openAnomalies() {
     if (!hideAllZones()) return;
+    rememberDashboardView("anomalies");
     const anomaliesZone = document.getElementById("anomalies-zone");
     if (anomaliesZone) anomaliesZone.style.display = "block";
 
@@ -380,5 +384,11 @@ document.addEventListener("DOMContentLoaded", () => {
   window.setStatus = setStatus;
 
   updateDateTime();
+  const savedView = sessionStorage.getItem("dashboard-view");
+  if (savedView === "history") openHistory();
+  else if (savedView === "history-v2") openHistoryV2();
+  else if (savedView === "water-consumption") openWaterConsumption();
+  else if (savedView === "anomalies") openAnomalies();
+  else showDashboard();
   setInterval(updateDateTime, 1000);
 });
