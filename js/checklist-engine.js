@@ -44,6 +44,9 @@ function showDashboard() {
     document.querySelectorAll(".menu-item").forEach(mi => mi.classList.remove("active"));
     const first = document.querySelector(".sidebar .menu-item");
     if (first) first.classList.add("active");
+    if (window.refreshDashboardChecklistStatuses) {
+        window.refreshDashboardChecklistStatuses();
+    }
 }
 
 function cancelChecklist() {

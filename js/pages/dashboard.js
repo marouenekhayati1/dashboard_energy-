@@ -99,6 +99,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const poste = currentPoste();
+    if (lastObservedPoste !== null && poste !== lastObservedPoste) {
+      refreshDashboardChecklistStatuses();
+    }
+    lastObservedPoste = poste;
     const posteField = document.getElementById("poste");
     if (posteField) {
       posteField.value = poste;
@@ -343,16 +347,58 @@ document.addEventListener("DOMContentLoaded", () => {
     loadAnomalies();
   }
 
+  let lastObservedPoste = null;
+
+  async function refreshDashboardChecklistStatuses() {
+    const cards = Array.from(document.querySelectorAll(".dashboard-card[data-checklist-id]"));
+    if (!cards.length) return;
+
+    const poste = currentPoste();
+    const interval = getPosteInterval(poste);
+    const { data, error } = await db.from("measurements")
+      .select("utility_name")
+      .in("utility_name", cards.map((card) => card.dataset.checklistId))
+      .eq("poste", poste)
+      .gte("recorded_at", interval.start.toISOString())
+      .lt("recorded_at", interval.end.toISOString());
+
+    if (poste !== currentPoste()) return;
+
+    if (error) {
+      cards.forEach((card) => {
+        card.classList.remove("is-locked");
+        const status = card.querySelector(".dashboard-card-status");
+        if (status) {
+          status.classList.remove("is-locked");
+          status.textContent = "État indisponible";
+        }
+      });
+      return;
+    }
+
+    const lockedIds = new Set((data || []).map((record) => record.utility_name));
+    cards.forEach((card) => {
+      const isLocked = lockedIds.has(card.dataset.checklistId);
+      const status = card.querySelector(".dashboard-card-status");
+      card.classList.toggle("is-locked", isLocked);
+      if (status) {
+        status.classList.toggle("is-locked", isLocked);
+        status.textContent = isLocked ? "🔒 Verrouillée pour ce poste" : "À remplir";
+      }
+    });
+  }
+
   const grid = document.getElementById("menu-grid");
   if (grid && typeof CHECKLISTS !== "undefined") {
     grid.innerHTML = "";
     for (const id in CHECKLISTS) {
       const c = CHECKLISTS[id];
       grid.innerHTML += `
-        <div class="dashboard-card" onclick="openChecklist('${id}')">
+        <div class="dashboard-card" data-checklist-id="${id}" onclick="openChecklist('${id}')">
             <div class="dashboard-icon">${c.icon}</div>
             <h3>${c.title}</h3>
             <p>Check-list de contrôle.</p>
+            <span class="dashboard-card-status">Vérification...</span>
         </div>`;
     }
   }
@@ -384,6 +430,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.saveAnomalie = saveAnomalie;
   window.loadAnomalies = loadAnomalies;
   window.setStatus = setStatus;
+  window.refreshDashboardChecklistStatuses = refreshDashboardChecklistStatuses;
 
   updateDateTime();
   const savedView = sessionStorage.getItem("dashboard-view");
