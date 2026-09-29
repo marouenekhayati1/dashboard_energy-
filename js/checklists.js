@@ -310,7 +310,7 @@ registerChecklist("compresseurs", {
 
 registerChecklist("glacee", {
     icon: "❄️",
-    title: "Eau Glacée - Trane et Chiller",
+    title: "Eau Glacée - Trane",
     sections: [
 
         {
@@ -331,6 +331,19 @@ registerChecklist("glacee", {
             ]
         },
 
+        {
+            title: "📝 Commentaire",
+            fields: [
+                { id: "commentaire", type: "textarea", label: "Commentaire / anomalie" }
+            ]
+        }
+    ]
+});
+
+registerChecklist("chiller", {
+    icon: "❄️",
+    title: "Eau Glacée - Chiller",
+    sections: [
         {
             title: "❄️ Chiller (absorption)",
             activeField: "chiller_etat",
