@@ -109,19 +109,17 @@ registerChecklist("surchauffee", {
 
         {
             title: "🏭 Chaudière Mingazzini",
+            activeField: "ming_etat",
             fields: [
-                { id: "ming_etat", type: "radio", label: "État", options: ["Active", "Inactive"] },
-                { id: "ming_temp", type: "number", label: "Température (°C) si active", min: 131, max: 134 },
-                { id: "ming_pression", type: "number", label: "Pression (bar) si active", min: 2.5, max: 3 }
+                { id: "ming_etat", type: "radio", label: "État", options: ["Active", "Inactive"] }
             ]
         },
 
         {
             title: "🏭 Chaudière ICI",
+            activeField: "ici_etat",
             fields: [
-                { id: "ici_etat", type: "radio", label: "État", options: ["Active", "Inactive"] },
-                { id: "ici_temp", type: "number", label: "Température (°C) si active", min: 131, max: 134 },
-                { id: "ici_pression", type: "number", label: "Pression (bar) si active", min: 2.5, max: 3 }
+                { id: "ici_etat", type: "radio", label: "État", options: ["Active", "Inactive"] }
             ]
         },
 
@@ -164,6 +162,7 @@ registerChecklist("vapeur", {
 
         {
             title: "🏭 Chaudière Mingazzini",
+            activeField: "ming_etat",
             fields: [
                 { id: "ming_etat", type: "radio", label: "État", options: ["Active", "Inactive"] },
                 { id: "ming_pression", type: "number", label: "Pression (bar) si active", min: 4, max: 7 },
@@ -174,6 +173,7 @@ registerChecklist("vapeur", {
 
         {
             title: "🏭 Chaudière Alsthom",
+            activeField: "alsthom_etat",
             fields: [
                 { id: "alsthom_etat", type: "radio", label: "État", options: ["Active", "Inactive"] },
                 { id: "alsthom_pression", type: "number", label: "Pression (bar) si active", min: 4, max: 7 },
@@ -433,6 +433,7 @@ registerChecklist("groupes", {
 
         {
             title: "⚡ Groupe 1",
+            activeField: "g1_etat",
             fields: [
                 { id: "g1_etat", type: "radio", label: "État", options: ["Active", "Inactive"] },
                 { id: "g1_charge", type: "number", label: "Charge moteur (%)", min: 75, hint: "Min 75 %" },
@@ -450,6 +451,7 @@ registerChecklist("groupes", {
 
         {
             title: "⚡ Groupe 2",
+            activeField: "g2_etat",
             fields: [
                 { id: "g2_etat", type: "radio", label: "État", options: ["Active", "Inactive"] },
                 { id: "g2_charge", type: "number", label: "Charge moteur (%)", min: 75, hint: "Min 75 %" },
