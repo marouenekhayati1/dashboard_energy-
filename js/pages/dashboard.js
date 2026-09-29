@@ -356,11 +356,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const poste = currentPoste();
     const interval = getPosteInterval(poste);
     const { data, error } = await db.from("measurements")
-      .select("utility_name")
+      .select("id, utility_name, technician_id")
       .in("utility_name", cards.map((card) => card.dataset.checklistId))
       .eq("poste", poste)
       .gte("recorded_at", interval.start.toISOString())
-      .lt("recorded_at", interval.end.toISOString());
+      .lt("recorded_at", interval.end.toISOString())
+      .order("recorded_at", { ascending: false });
 
     if (poste !== currentPoste()) return;
 
@@ -368,22 +369,41 @@ document.addEventListener("DOMContentLoaded", () => {
       cards.forEach((card) => {
         card.classList.remove("is-locked");
         const status = card.querySelector(".dashboard-card-status");
+        const editButton = card.querySelector(".dashboard-card-edit");
         if (status) {
           status.classList.remove("is-locked");
           status.textContent = "État indisponible";
+        }
+        if (editButton) {
+          editButton.hidden = true;
+          delete editButton.dataset.recordId;
         }
       });
       return;
     }
 
-    const lockedIds = new Set((data || []).map((record) => record.utility_name));
+    const recordsByChecklist = new Map();
+    for (const record of data || []) {
+      if (!recordsByChecklist.has(record.utility_name)) {
+        recordsByChecklist.set(record.utility_name, record);
+      }
+    }
+    const session = getSession();
     cards.forEach((card) => {
-      const isLocked = lockedIds.has(card.dataset.checklistId);
+      const record = recordsByChecklist.get(card.dataset.checklistId);
+      const isLocked = Boolean(record);
       const status = card.querySelector(".dashboard-card-status");
+      const editButton = card.querySelector(".dashboard-card-edit");
       card.classList.toggle("is-locked", isLocked);
       if (status) {
         status.classList.toggle("is-locked", isLocked);
         status.textContent = isLocked ? "🔒 Verrouillée pour ce poste" : "À remplir";
+      }
+      if (editButton) {
+        const canEdit = record && (session?.role === "admin" || session?.id === record.technician_id);
+        editButton.hidden = !canEdit;
+        if (canEdit) editButton.dataset.recordId = record.id;
+        else delete editButton.dataset.recordId;
       }
     });
   }
@@ -399,8 +419,16 @@ document.addEventListener("DOMContentLoaded", () => {
             <h3>${c.title}</h3>
             <p>Check-list de contrôle.</p>
             <span class="dashboard-card-status">Vérification...</span>
+            <button class="btn btn-success dashboard-card-edit" type="button" hidden>Modifier</button>
         </div>`;
     }
+    grid.addEventListener("click", (event) => {
+      const button = event.target.closest(".dashboard-card-edit");
+      if (!button || button.hidden) return;
+      event.preventDefault();
+      event.stopPropagation();
+      editChecklistRecord(button.dataset.recordId);
+    });
   }
 
   const themeButton = document.getElementById("theme-btn");
