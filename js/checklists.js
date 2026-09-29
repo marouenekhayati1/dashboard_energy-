@@ -310,11 +310,12 @@ registerChecklist("compresseurs", {
 
 registerChecklist("glacee", {
     icon: "❄️",
-    title: "Eau Glacée",
+    title: "Eau Glacée - Trane et Chiller",
     sections: [
 
         {
             title: "❄️ Trane",
+            activeField: "trane_etat",
             fields: [
                 { id: "trane_etat", type: "radio", label: "État", options: ["Active", "Inactive"] },
                 { id: "trane_pression_res", type: "number", label: "Pression Réservoir (bar)" },
@@ -332,6 +333,7 @@ registerChecklist("glacee", {
 
         {
             title: "❄️ Chiller (absorption)",
+            activeField: "chiller_etat",
             fields: [
                 { id: "chiller_etat", type: "radio", label: "État", options: ["Active", "Inactive"] },
                 { id: "chiller_niveau_tour", type: "select", label: "Niveau d'eau tour de refroidissement", options: ["OK", "Bas", "Haut"] },
@@ -346,9 +348,22 @@ registerChecklist("glacee", {
                 { id: "chiller_bromure", type: "select", label: "Niveau voyant bromure de lithium", options: ["OK", "Bas", "Haut"] }
             ]
         },
+        {
+            title: "📝 Commentaire",
+            fields: [
+                { id: "commentaire", type: "textarea", label: "Commentaire / anomalie" }
+            ]
+        }
+    ]
+});
 
+registerChecklist("york", {
+    icon: "❄️",
+    title: "Eau Glacée - York",
+    sections: [
         {
             title: "❄️ York",
+            activeField: "york_etat",
             fields: [
                 { id: "york_etat", type: "radio", label: "État", options: ["Active", "Inactive"] },
                 { id: "york_pression_res", type: "number", label: "Pression Réservoir (bar)" },
@@ -363,14 +378,12 @@ registerChecklist("glacee", {
                 { id: "york_aval", type: "number", label: "Température en aval (°C)" }
             ]
         },
-
         {
             title: "📝 Commentaire",
             fields: [
                 { id: "commentaire", type: "textarea", label: "Commentaire / anomalie" }
             ]
         }
-
     ]
 });
 

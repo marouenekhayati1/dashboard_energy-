@@ -186,8 +186,13 @@ function getPosteInterval(poste) {
     return { start, end };
 }
 
-function isChecklistFieldRequired(field) {
-    return field.required !== false && field.id !== "commentaire" && field.id !== "dosage_info";
+function isChecklistFieldRequired(field, section = null) {
+    if (field.required === false || field.id === "commentaire" || field.id === "dosage_info") return false;
+    if (section?.activeField && field.id !== section.activeField) {
+        const state = document.querySelector('input[name="' + section.activeField + '"]:checked')?.value;
+        if (state === "Inactive") return false;
+    }
+    return true;
 }
 
 function checklistMissingFields() {
@@ -198,7 +203,7 @@ function checklistMissingFields() {
     for (const section of cfg.sections) {
         if (section.night && activeChecklist.poste !== "nuit") continue;
         for (const field of section.fields) {
-            if (!isChecklistFieldRequired(field)) continue;
+            if (!isChecklistFieldRequired(field, section)) continue;
             let hasValue = false;
             if (field.type === "radio") {
                 hasValue = Boolean(document.querySelector('input[name="' + field.id + '"]:checked'));
@@ -239,13 +244,14 @@ function attachChecklistValidation() {
     for (const section of cfg.sections) {
         if (section.night && activeChecklist.poste !== "nuit") continue;
         for (const field of section.fields) {
-            if (!isChecklistFieldRequired(field)) continue;
             const inputs = field.type === "radio" || field.type === "checkbox-group"
                 ? document.querySelectorAll('input[name="' + field.id + '"]')
                 : [document.getElementById(field.id)];
             inputs.forEach((input) => {
                 if (!input) return;
-                input.setAttribute("aria-describedby", "error_" + field.id);
+                if (isChecklistFieldRequired(field, section)) {
+                    input.setAttribute("aria-describedby", "error_" + field.id);
+                }
                 const clearError = () => {
                     if (!checklistMissingFields().some((missing) => missing.id === field.id)) {
                         const message = document.getElementById("error_" + field.id);
@@ -255,6 +261,24 @@ function attachChecklistValidation() {
                 };
                 input.addEventListener("input", clearError);
                 input.addEventListener("change", clearError);
+            });
+        }
+
+        if (section.activeField) {
+            document.querySelectorAll('input[name="' + section.activeField + '"]').forEach((input) => {
+                input.addEventListener("change", () => {
+                    const state = document.querySelector('input[name="' + section.activeField + '"]:checked')?.value;
+                    if (state !== "Inactive") return;
+                    for (const field of section.fields) {
+                        if (field.id === section.activeField) continue;
+                        const message = document.getElementById("error_" + field.id);
+                        if (message) message.hidden = true;
+                        const fieldInputs = field.type === "radio" || field.type === "checkbox-group"
+                            ? document.querySelectorAll('input[name="' + field.id + '"]')
+                            : [document.getElementById(field.id)];
+                        fieldInputs.forEach((fieldInput) => fieldInput?.removeAttribute("aria-invalid"));
+                    }
+                });
             });
         }
     }

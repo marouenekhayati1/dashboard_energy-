@@ -4,7 +4,8 @@ const HISTO_V2_LABELS = {
     vapeur: "♨️ Chaudière vapeur",
     vide: "🔧 Pompe à vide",
     compresseurs: "💨 Compresseurs",
-    glacee: "❄️ Eau glacée",
+    glacee: "❄️ Eau glacée - Trane et Chiller",
+    york: "❄️ Eau glacée - York",
     thermo: "🌡️ Thermoventilation",
     groupes: "⚡ Groupes électrogènes",
     osmose: "💧 Station d'osmose"
