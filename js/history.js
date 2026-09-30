@@ -39,6 +39,46 @@ function renderModificationAudit(data) {
     }).join("");
 }
 
+function flattenHistoryRows(data) {
+    const rows = [];
+
+    for (const record of data || []) {
+        if (record.utility_name !== "groupes" || !record.data || typeof record.data !== "object") {
+            rows.push({ ...record, __historyGroupLabel: null });
+            continue;
+        }
+
+        const groupRows = { 1: {}, 2: {} };
+        for (const [key, value] of Object.entries(record.data)) {
+            if (key === "_modifications") continue;
+            const match = /^g([12])_(.+)$/.exec(key);
+            if (match) {
+                groupRows[match[1]][match[2]] = value;
+            }
+        }
+
+        const groupIds = Object.keys(groupRows).filter((groupId) => Object.keys(groupRows[groupId]).length > 0);
+        if (!groupIds.length) {
+            rows.push({ ...record, __historyGroupLabel: "⚡ Groupes électrogènes" });
+            continue;
+        }
+
+        for (const groupId of groupIds) {
+            const cloned = {
+                ...record,
+                data: {
+                    ...groupRows[groupId],
+                    ...(record.data._modifications ? { _modifications: record.data._modifications } : {})
+                },
+                __historyGroupLabel: `⚡ Groupe ${groupId}`
+            };
+            rows.push(cloned);
+        }
+    }
+
+    return rows;
+}
+
 function escapeHistoryHtml(value) {
     return String(value).replace(/[&<>"']/g, (character) => ({
         "&": "&amp;",
@@ -49,6 +89,136 @@ function escapeHistoryHtml(value) {
     })[character]);
 }
 
+let historyRows = [];
+let historyColumns = [];
+let historySortKey = "recorded_at";
+let historySortDirection = "desc";
+
+function historyTechnician(record) {
+    return record.technicians
+        ? `${record.technicians.first_name || ""} ${record.technicians.last_name || ""}`.trim()
+        : "";
+}
+
+function historyValue(record, key) {
+    if (key === "recorded_at") return record.recorded_at || "";
+    if (key === "utility_name") return record.__historyGroupLabel || HISTO_LABELS[record.utility_name] || record.utility_name || "";
+    if (key === "__poste") return getPosteFromDate(new Date(record.recorded_at)) || "";
+    if (key === "__technician") return historyTechnician(record);
+    if (key === "__audit") return (record.data?._modifications || []).map((item) => `${item.first_name || ""} ${item.last_name || ""} ${item.edited_at || ""}`).join(" ");
+    if (key === "__action") return "";
+    const value = record.data?.[key];
+    return value === null || value === undefined ? "" : typeof value === "object" ? JSON.stringify(value) : String(value);
+}
+
+function historyDateKey(date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function renderHistoryTable() {
+    const tbody = document.getElementById("history-body");
+    const info = document.getElementById("history-info");
+    if (!tbody) return;
+
+    const dateFrom = document.getElementById("history-date-from")?.value || "";
+    const dateTo = document.getElementById("history-date-to")?.value || "";
+    const posteFilter = document.getElementById("history-poste-filter")?.value || "";
+    const technicianFilter = document.getElementById("history-technician-filter")?.value || "";
+    const columnFilters = [...document.querySelectorAll("[data-history-column-filter]")]
+        .map((input) => [input.dataset.historyColumnFilter, input.value.trim().toLocaleLowerCase("fr-FR")])
+        .filter(([, value]) => value);
+
+    const visibleRows = historyRows.filter((record) => {
+        const timestamp = new Date(record.recorded_at);
+        const dateKey = Number.isNaN(timestamp.getTime()) ? "" : historyDateKey(timestamp);
+        if (dateFrom && dateKey < dateFrom) return false;
+        if (dateTo && dateKey > dateTo) return false;
+        if (posteFilter && historyValue(record, "__poste") !== posteFilter) return false;
+        if (technicianFilter && historyValue(record, "__technician") !== technicianFilter) return false;
+        return columnFilters.every(([key, value]) => historyValue(record, key).toLocaleLowerCase("fr-FR").includes(value));
+    });
+
+    visibleRows.sort((left, right) => {
+        const leftValue = historyValue(left, historySortKey);
+        const rightValue = historyValue(right, historySortKey);
+        const comparison = historySortKey === "recorded_at"
+            ? new Date(leftValue).getTime() - new Date(rightValue).getTime()
+            : leftValue.localeCompare(rightValue, "fr", { numeric: true, sensitivity: "base" });
+        return historySortDirection === "asc" ? comparison : -comparison;
+    });
+
+    info.textContent = `${visibleRows.length} ligne(s) affichée(s) sur ${historyRows.length}`;
+    if (!visibleRows.length) {
+        tbody.innerHTML = `<tr><td colspan="${6 + historyColumns.length}">Aucun relevé ne correspond aux filtres.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = visibleRows.map((record) => {
+        const session = getSession();
+        const canEdit = session?.role === "admin" || session?.id === record.technician_id;
+        const technician = historyTechnician(record) || "—";
+        const recordedAt = new Date(record.recorded_at);
+        const date = Number.isNaN(recordedAt.getTime()) ? "Date inconnue" : recordedAt.toLocaleString("fr-FR");
+        const poste = getPosteFromDate(recordedAt) || "—";
+        const label = record.__historyGroupLabel || HISTO_LABELS[record.utility_name] || record.utility_name;
+
+        let html = `<tr>
+            <td>${renderModificationAudit(record.data)}</td>
+            <td style="white-space:nowrap">${escapeHistoryHtml(date)}</td>
+            <td style="white-space:nowrap">${escapeHistoryHtml(label)}</td>
+            <td>${escapeHistoryHtml(poste)}</td>
+            <td style="white-space:nowrap">${escapeHistoryHtml(technician)}</td>
+            <td>${canEdit
+                ? `<button class="btn btn-success" type="button" data-edit-measurement="${encodeURIComponent(record.id)}">Modifier</button>`
+                : "—"}</td>`;
+
+        for (const column of historyColumns) {
+            const value = historyValue(record, column) || "—";
+            html += `<td>${escapeHistoryHtml(value)}</td>`;
+        }
+        return html + "</tr>";
+    }).join("");
+}
+
+function historySortHeader(key, label) {
+    const indicator = historySortKey === key ? (historySortDirection === "asc" ? " ▲" : " ▼") : "";
+    return `<th><button class="history-sort" type="button" data-history-sort="${escapeHistoryHtml(key)}">${escapeHistoryHtml(label)}${indicator}</button></th>`;
+}
+
+function renderHistoryHeader() {
+    const thead = document.getElementById("history-thead");
+    const filterValues = new Map([...thead.querySelectorAll("[data-history-column-filter]")]
+        .map((input) => [input.dataset.historyColumnFilter, input.value]));
+    const sortable = [
+        ["__audit", "Modifié par / le"],
+        ["recorded_at", "Date et heure"],
+        ["utility_name", "Check-list"],
+        ["__poste", "Poste"],
+        ["__technician", "Technicien"]
+    ];
+    let header = `<tr>${sortable.map(([key, label]) => historySortHeader(key, label)).join("")}<th>Action</th>`;
+    header += historyColumns.map((column) => {
+        const label = historyRows.some((record) => record.utility_name === "groupes" && record.data?.[column] !== undefined)
+            ? getLabel(`g1_${column}`)
+            : getLabel(column);
+        return historySortHeader(column, label);
+    }).join("") + "</tr>";
+
+    const filterKeys = ["__audit", "recorded_at", "utility_name", "__poste", "__technician", "__action", ...historyColumns];
+    header += `<tr>${filterKeys.map((key) => key === "__action"
+        ? "<th></th>"
+        : `<th><input class="history-column-filter" type="search" data-history-column-filter="${escapeHistoryHtml(key)}" aria-label="Filtrer ${escapeHistoryHtml(key)}" placeholder="Filtrer" value="${escapeHistoryHtml(filterValues.get(key) || "")}"></th>`).join("")}</tr>`;
+    thead.innerHTML = header;
+}
+
+function updateHistoryTechnicians() {
+    const select = document.getElementById("history-technician-filter");
+    if (!select) return;
+    const selected = select.value;
+    const names = [...new Set(historyRows.map(historyTechnician).filter(Boolean))].sort((left, right) => left.localeCompare(right, "fr"));
+    select.innerHTML = '<option value="">Tous les techniciens</option>' + names.map((name) => `<option value="${escapeHistoryHtml(name)}">${escapeHistoryHtml(name)}</option>`).join("");
+    if (names.includes(selected)) select.value = selected;
+}
 
 async function loadHistory() {
     const thead = document.getElementById("history-thead");
@@ -76,71 +246,48 @@ async function loadHistory() {
     }
 
     if (!data || data.length === 0) {
+        historyRows = [];
         thead.innerHTML = "";
         tbody.innerHTML = '<tr><td colspan="6">Aucun relevé trouvé.</td></tr>';
         info.textContent = "";
         return;
     }
 
-    info.textContent = data.length + " relevé(s) affiché(s)";
-
-    // 1. Construire la liste ordonnée de tous les champs rencontrés (sans doublons)
-    const columns = [];
-    for (const r of data) {
+    historyRows = flattenHistoryRows(data);
+    historyColumns = [];
+    for (const r of historyRows) {
         if (!r.data) continue;
         for (const key in r.data) {
-            if (key !== "_modifications" && !columns.includes(key)) columns.push(key);
+            if (key !== "_modifications" && !historyColumns.includes(key)) historyColumns.push(key);
         }
     }
-
-    // 2. En-tête : colonnes fixes + colonnes de détails
-        let th = '<th>Modifié par / le</th>'
-            + '<th>Date et heure</th>'
-           + '<th>Check-list</th>'
-           + '<th>Poste</th>'
-            + '<th>Technicien</th>'
-            + '<th>Action</th>';
-    for (const col of columns) {
-        th += '<th>' + getLabel(col) + '</th>';
-    }
-    thead.innerHTML = th;
-
-    // 3. Lignes : valeurs directement affichées
-    let html = "";
-    for (const r of data) {
-        const session = getSession();
-        const canEdit = session?.role === "admin" || session?.id === r.technician_id;
-        const tech = r.technicians
-            ? r.technicians.first_name + " " + r.technicians.last_name
-            : "—";
-        const recordedAt = new Date(r.recorded_at);
-        const date = recordedAt.toLocaleString("fr-FR");
-        const computedPoste = getPosteFromDate(recordedAt);
-        const poste = computedPoste || "—";
-        const label = HISTO_LABELS[r.utility_name] || r.utility_name;
-
-        html += '<tr>'
-              + '<td>' + renderModificationAudit(r.data) + '</td>'
-              + '<td style="white-space:nowrap">' + date + '</td>'
-              + '<td style="white-space:nowrap">' + label + '</td>'
-              + '<td>' + poste + '</td>'
-              + '<td style="white-space:nowrap">' + tech + '</td>'
-              + '<td>' + (canEdit
-                  ? '<button class="btn btn-success" type="button" data-edit-measurement="' + encodeURIComponent(r.id) + '">Modifier</button>'
-                  : '—') + '</td>';
-
-        for (const col of columns) {
-            const val = (r.data && r.data[col] !== undefined && r.data[col] !== "") ? r.data[col] : "—";
-            html += '<td>' + val + '</td>';
-        }
-        html += '</tr>';
-    }
-    tbody.innerHTML = html;
+    updateHistoryTechnicians();
+    renderHistoryHeader();
+    renderHistoryTable();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("history-body")?.addEventListener("click", (event) => {
+    const body = document.getElementById("history-body");
+    body?.addEventListener("click", (event) => {
         const button = event.target.closest("[data-edit-measurement]");
         if (button) editChecklistRecord(decodeURIComponent(button.dataset.editMeasurement));
     });
+
+    document.getElementById("history-thead")?.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-history-sort]");
+        if (!button) return;
+        if (historySortKey === button.dataset.historySort) {
+            historySortDirection = historySortDirection === "asc" ? "desc" : "asc";
+        } else {
+            historySortKey = button.dataset.historySort;
+            historySortDirection = "asc";
+        }
+        renderHistoryHeader();
+        renderHistoryTable();
+    });
+
+    document.getElementById("history-thead")?.addEventListener("input", renderHistoryTable);
+    ["history-date-from", "history-date-to", "history-poste-filter", "history-technician-filter"]
+        .forEach((id) => document.getElementById(id)?.addEventListener("change", renderHistoryTable));
+    ["history-filter", "history-nb"].forEach((id) => document.getElementById(id)?.addEventListener("change", loadHistory));
 });

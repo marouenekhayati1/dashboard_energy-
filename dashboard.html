@@ -375,6 +375,23 @@ textarea:focus {
     overflow-x: auto;
 }
 
+.history-sort {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    text-transform: inherit;
+    cursor: pointer;
+}
+
+.history-column-filter {
+    min-width: 110px;
+    padding: 7px;
+    font-size: 12px;
+}
+
 .history-v2-modal {
     position: fixed;
     inset: 0;
@@ -847,7 +864,7 @@ tr:hover td {
         <p id="history-info"></p>
     </div>
 
-    <div class="controls" style="grid-template-columns:1fr 1fr">
+    <div class="controls" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
 
         <div class="control-card">
             <label>Filtrer par check-list</label>
@@ -877,6 +894,33 @@ tr:hover td {
             </select>
         </div>
 
+        <div class="control-card">
+            <label for="history-date-from">Date de début</label>
+            <input id="history-date-from" type="date">
+        </div>
+
+        <div class="control-card">
+            <label for="history-date-to">Date de fin</label>
+            <input id="history-date-to" type="date">
+        </div>
+
+        <div class="control-card">
+            <label for="history-poste-filter">Poste</label>
+            <select id="history-poste-filter">
+                <option value="">Tous les postes</option>
+                <option value="matin">Matin</option>
+                <option value="apres-midi">Après-midi</option>
+                <option value="nuit">Nuit</option>
+            </select>
+        </div>
+
+        <div class="control-card">
+            <label for="history-technician-filter">Technicien</label>
+            <select id="history-technician-filter">
+                <option value="">Tous les techniciens</option>
+            </select>
+        </div>
+
     </div>
 
     <div class="card" style="overflow:hidden">
@@ -900,7 +944,7 @@ tr:hover td {
         <p id="history-v2-info"></p>
     </div>
 
-    <div class="controls" style="grid-template-columns:1fr 1fr">
+    <div class="controls" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
         <div class="control-card">
             <label for="history-v2-filter">Filtrer par check-list</label>
             <select id="history-v2-filter">
@@ -925,6 +969,33 @@ tr:hover td {
                 <option value="100">100 derniers</option>
                 <option value="500">500 derniers</option>
                 <option value="all">Tout afficher</option>
+            </select>
+        </div>
+
+        <div class="control-card">
+            <label for="history-v2-date-from">Date de début</label>
+            <input id="history-v2-date-from" type="date">
+        </div>
+
+        <div class="control-card">
+            <label for="history-v2-date-to">Date de fin</label>
+            <input id="history-v2-date-to" type="date">
+        </div>
+
+        <div class="control-card">
+            <label for="history-v2-poste-filter">Poste</label>
+            <select id="history-v2-poste-filter">
+                <option value="">Tous les postes</option>
+                <option value="matin">Matin</option>
+                <option value="apres-midi">Après-midi</option>
+                <option value="nuit">Nuit</option>
+            </select>
+        </div>
+
+        <div class="control-card">
+            <label for="history-v2-technician-filter">Technicien</label>
+            <select id="history-v2-technician-filter">
+                <option value="">Tous les techniciens</option>
             </select>
         </div>
     </div>
