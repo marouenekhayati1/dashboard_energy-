@@ -343,14 +343,22 @@ function canLeaveChecklist() {
     if (!missing.length) return true;
 
     showChecklistErrors(missing);
-    alert("Veuillez compléter tous les champs obligatoires avant de quitter cette check-list. Champ manquant : " + missing[0].label);
-    const field = missing[0];
-    const input = field.type === "radio" || field.type === "checkbox-group"
-        ? document.querySelector('input[name="' + field.id + '"]')
-        : document.getElementById(field.id);
-    input?.scrollIntoView({ behavior: "smooth", block: "center" });
-    input?.focus();
-    return false;
+
+    const shouldDiscard = window.confirm(
+        "Les données saisies seront abandonnées.\n\nOK pour continuer, Annuler pour rester sur la page."
+    );
+
+    if (!shouldDiscard) {
+        const field = missing[0];
+        const input = field.type === "radio" || field.type === "checkbox-group"
+            ? document.querySelector('input[name="' + field.id + '"]')
+            : document.getElementById(field.id);
+        input?.scrollIntoView({ behavior: "smooth", block: "center" });
+        input?.focus();
+        return false;
+    }
+
+    return true;
 }
 
 async function editChecklistRecord(recordId) {
