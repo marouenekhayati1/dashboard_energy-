@@ -122,8 +122,6 @@ function renderHistoryTable() {
 
     const dateFrom = document.getElementById("history-date-from")?.value || "";
     const dateTo = document.getElementById("history-date-to")?.value || "";
-    const posteFilter = document.getElementById("history-poste-filter")?.value || "";
-    const technicianFilter = document.getElementById("history-technician-filter")?.value || "";
     const columnFilters = [...document.querySelectorAll("[data-history-column-filter]")]
         .map((input) => [input.dataset.historyColumnFilter, input.value.trim().toLocaleLowerCase("fr-FR")])
         .filter(([, value]) => value);
@@ -133,8 +131,6 @@ function renderHistoryTable() {
         const dateKey = Number.isNaN(timestamp.getTime()) ? "" : historyDateKey(timestamp);
         if (dateFrom && dateKey < dateFrom) return false;
         if (dateTo && dateKey > dateTo) return false;
-        if (posteFilter && historyValue(record, "__poste") !== posteFilter) return false;
-        if (technicianFilter && historyValue(record, "__technician") !== technicianFilter) return false;
         return columnFilters.every(([key, value]) => historyValue(record, key).toLocaleLowerCase("fr-FR").includes(value));
     });
 
@@ -211,15 +207,6 @@ function renderHistoryHeader() {
     thead.innerHTML = header;
 }
 
-function updateHistoryTechnicians() {
-    const select = document.getElementById("history-technician-filter");
-    if (!select) return;
-    const selected = select.value;
-    const names = [...new Set(historyRows.map(historyTechnician).filter(Boolean))].sort((left, right) => left.localeCompare(right, "fr"));
-    select.innerHTML = '<option value="">Tous les techniciens</option>' + names.map((name) => `<option value="${escapeHistoryHtml(name)}">${escapeHistoryHtml(name)}</option>`).join("");
-    if (names.includes(selected)) select.value = selected;
-}
-
 async function loadHistory() {
     const thead = document.getElementById("history-thead");
     const tbody = document.getElementById("history-body");
@@ -261,7 +248,6 @@ async function loadHistory() {
             if (key !== "_modifications" && !historyColumns.includes(key)) historyColumns.push(key);
         }
     }
-    updateHistoryTechnicians();
     renderHistoryHeader();
     renderHistoryTable();
 }
@@ -287,7 +273,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.getElementById("history-thead")?.addEventListener("input", renderHistoryTable);
-    ["history-date-from", "history-date-to", "history-poste-filter", "history-technician-filter"]
+    ["history-date-from", "history-date-to"]
         .forEach((id) => document.getElementById(id)?.addEventListener("change", renderHistoryTable));
     ["history-filter", "history-nb"].forEach((id) => document.getElementById(id)?.addEventListener("change", loadHistory));
 });

@@ -97,15 +97,6 @@ function historyV2DateKey(date) {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
-function updateHistoryV2Technicians() {
-    const select = document.getElementById("history-v2-technician-filter");
-    if (!select) return;
-    const selected = select.value;
-    const names = [...new Set(historyV2Records.map(historyV2Technician).filter(Boolean))].sort((left, right) => left.localeCompare(right, "fr"));
-    select.innerHTML = '<option value="">Tous les techniciens</option>' + names.map((name) => `<option value="${escapeHistoryV2(name)}">${escapeHistoryV2(name)}</option>`).join("");
-    if (names.includes(selected)) select.value = selected;
-}
-
 function renderHistoryV2Header() {
     const header = document.querySelector("#history-v2-zone thead tr");
     if (!header) return;
@@ -130,16 +121,12 @@ function renderHistoryV2Table() {
 
     const dateFrom = document.getElementById("history-v2-date-from")?.value || "";
     const dateTo = document.getElementById("history-v2-date-to")?.value || "";
-    const posteFilter = document.getElementById("history-v2-poste-filter")?.value || "";
-    const technicianFilter = document.getElementById("history-v2-technician-filter")?.value || "";
 
     historyV2VisibleRecords = historyV2Records.filter((record) => {
         const timestamp = new Date(record.recorded_at);
         const dateKey = Number.isNaN(timestamp.getTime()) ? "" : historyV2DateKey(timestamp);
         if (dateFrom && dateKey < dateFrom) return false;
         if (dateTo && dateKey > dateTo) return false;
-        if (posteFilter && historyV2Value(record, "__poste") !== posteFilter) return false;
-        if (technicianFilter && historyV2Value(record, "__technician") !== technicianFilter) return false;
         return true;
     });
 
@@ -212,7 +199,6 @@ async function loadHistoryV2() {
         return;
     }
 
-    updateHistoryV2Technicians();
     renderHistoryV2Header();
     renderHistoryV2Table();
 }
@@ -273,7 +259,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("history-v2-filter")?.addEventListener("change", loadHistoryV2);
     document.getElementById("history-v2-nb")?.addEventListener("change", loadHistoryV2);
-    ["history-v2-date-from", "history-v2-date-to", "history-v2-poste-filter", "history-v2-technician-filter"]
+    ["history-v2-date-from", "history-v2-date-to"]
         .forEach((id) => document.getElementById(id)?.addEventListener("change", renderHistoryV2Table));
     document.querySelector("[data-action='close-history-v2-detail']")?.addEventListener("click", closeHistoryV2Detail);
 
