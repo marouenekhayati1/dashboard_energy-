@@ -91,6 +91,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function getPosteLabel(poste) {
+    if (poste === "matin") return "Matin";
+    if (poste === "apres-midi") return "Jour";
+    if (poste === "nuit") return "Nuit";
+    return "—";
+  }
+
   function updateDateTime() {
     const now = new Date();
     const dateField = document.getElementById("date");
@@ -105,15 +112,12 @@ document.addEventListener("DOMContentLoaded", () => {
     lastObservedPoste = poste;
     const posteField = document.getElementById("poste");
     if (posteField) {
-      posteField.value = poste === "matin" ? "Matin" : poste === "apres-midi" ? "Jour" : poste === "nuit" ? "Nuit" : "—";
+      posteField.value = getPosteLabel(poste);
     }
 
     const badge = document.getElementById("badge-poste");
     if (badge) {
-      if (poste === "nuit") badge.textContent = "Poste : Nuit";
-      else if (poste === "matin") badge.textContent = "Poste : Matin";
-      else if (poste === "apres-midi") badge.textContent = "Poste : Jour";
-      else badge.textContent = "Poste : —";
+      badge.textContent = "Poste : " + getPosteLabel(poste);
     }
 
     document.querySelectorAll(".night-only").forEach((el) => {
@@ -419,7 +423,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="dashboard-icon">${c.icon}</div>
             <h3>${c.title}</h3>
             <p>Check-list de contrôle.</p>
-            <span class="dashboard-card-status">Vérification...</span>
+            <span class="dashboard-card-status">À remplir</span>
             <button class="btn btn-success dashboard-card-edit" type="button" hidden>Modifier</button>
         </div>`;
     }
