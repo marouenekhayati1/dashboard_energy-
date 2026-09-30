@@ -203,7 +203,7 @@ registerChecklist("vide", {
         {
             title: "🔧 Généralités",
             fields: [
-                { id: "purge_circuit", type: "checkbox", label: "Purge du circuit (nuit)", label2: "Fait" },
+                { id: "purge_circuit", type: "checkbox", label: "Purge du circuit", label2: "Fait" },
                 { id: "pression_globale", type: "number", label: "Pression globale (mbar)" },
                 { id: "pression_reservoir", type: "number", label: "Pression réservoir (mbar)" }
             ]
@@ -253,7 +253,7 @@ registerChecklist("compresseurs", {
         {
             title: "💨 Purge",
             fields: [
-                { id: "purge_circuit", type: "checkbox", label: "Purge du circuit (nuit)", label2: "Fait" }
+                { id: "purge_circuit", type: "checkbox", label: "Purge du circuit", label2: "Fait" }
             ]
         },
 
