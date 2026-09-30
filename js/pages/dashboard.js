@@ -105,14 +105,15 @@ document.addEventListener("DOMContentLoaded", () => {
     lastObservedPoste = poste;
     const posteField = document.getElementById("poste");
     if (posteField) {
-      posteField.value = poste;
+      posteField.value = poste === "matin" ? "Matin" : poste === "apres-midi" ? "Jour" : poste === "nuit" ? "Nuit" : "—";
     }
 
     const badge = document.getElementById("badge-poste");
     if (badge) {
-      if (poste === "nuit") badge.textContent = "Poste : 🌙 Nuit";
-      else if (poste === "matin") badge.textContent = "Poste : 🌅 Matin";
-      else badge.textContent = "Poste : ☀️ Après-midi";
+      if (poste === "nuit") badge.textContent = "Poste : Nuit";
+      else if (poste === "matin") badge.textContent = "Poste : Matin";
+      else if (poste === "apres-midi") badge.textContent = "Poste : Jour";
+      else badge.textContent = "Poste : —";
     }
 
     document.querySelectorAll(".night-only").forEach((el) => {

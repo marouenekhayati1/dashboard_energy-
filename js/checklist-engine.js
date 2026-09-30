@@ -242,6 +242,43 @@ function showChecklistErrors(missing) {
     }
 }
 
+async function validateCounterInput(fieldId) {
+    if (!activeChecklist || !activeChecklist.id) return;
+    const field = Object.values(CHECKLISTS)
+        .flatMap((checklist) => checklist.sections)
+        .flatMap((section) => section.fields)
+        .find((candidate) => candidate.id === fieldId);
+
+    const input = document.getElementById(fieldId);
+    const error = document.getElementById("counter_error_" + fieldId);
+    if (!field || !input || !error) return;
+
+    const raw = input.value.trim();
+    if (!raw) {
+        error.hidden = true;
+        input.removeAttribute("aria-invalid");
+        return;
+    }
+
+    const currentValue = Number(raw);
+    if (Number.isNaN(currentValue)) {
+        error.hidden = true;
+        input.removeAttribute("aria-invalid");
+        return;
+    }
+
+    const previousValue = await getPreviousCounterValue(activeChecklist.id, fieldId, activeChecklist.recordId || null);
+    if (previousValue !== null && currentValue < previousValue) {
+        error.textContent = `Le compteur ${field.label} ne peut pas être inférieur à l'ancien compteur. L'ancien compteur est : ${previousValue}.`;
+        error.hidden = false;
+        input.setAttribute("aria-invalid", "true");
+        return;
+    }
+
+    error.hidden = true;
+    input.removeAttribute("aria-invalid");
+}
+
 function attachChecklistValidation() {
     const cfg = CHECKLISTS[activeChecklist.id];
     for (const section of cfg.sections) {
@@ -262,8 +299,18 @@ function attachChecklistValidation() {
                         inputs.forEach((fieldInput) => fieldInput?.removeAttribute("aria-invalid"));
                     }
                 };
-                input.addEventListener("input", clearError);
-                input.addEventListener("change", clearError);
+                input.addEventListener("input", () => {
+                    clearError();
+                    if (field.id.startsWith("cpt_")) {
+                        validateCounterInput(field.id);
+                    }
+                });
+                input.addEventListener("change", () => {
+                    clearError();
+                    if (field.id.startsWith("cpt_")) {
+                        validateCounterInput(field.id);
+                    }
+                });
             });
         }
 
@@ -350,6 +397,9 @@ function renderField(f) {
     const error = isChecklistFieldRequired(f)
         ? '<div class="field-error" id="error_' + f.id + '" hidden>Ce champ est obligatoire pour enregistrer.</div>'
         : "";
+    const counterError = String(f.id).startsWith("cpt_")
+        ? '<div class="field-error" id="counter_error_' + f.id + '" hidden></div>'
+        : "";
 
     let input = "";
 
@@ -401,7 +451,7 @@ function renderField(f) {
         input = '<textarea rows="4" id="' + f.id + '" placeholder="Commentaire..."' + readonly + '></textarea>';
     }
 
-    return '<div class="form-group"><label>' + f.label + '</label>' + input + error + info + statusDiv + '</div>';
+    return '<div class="form-group"><label>' + f.label + '</label>' + input + error + counterError + info + statusDiv + '</div>';
 }
 
 
@@ -425,6 +475,58 @@ function checkRange(id, min, max, statusId) {
     }
 }
 
+async function getPreviousCounterValue(utilityName, fieldId, currentRecordId = null) {
+    let query = db.from("measurements")
+        .select("data")
+        .eq("utility_name", utilityName)
+        .order("recorded_at", { ascending: false })
+        .limit(50);
+
+    if (currentRecordId) {
+        query = query.neq("id", currentRecordId);
+    }
+
+    const { data, error } = await query;
+    if (error || !Array.isArray(data)) return null;
+
+    for (const row of data) {
+        const value = row?.data?.[fieldId];
+        if (value === undefined || value === null || value === "") continue;
+        const numeric = Number(value);
+        if (!Number.isNaN(numeric)) return numeric;
+    }
+
+    return null;
+}
+
+async function validateCounterFields(id) {
+    const cfg = CHECKLISTS[id];
+    if (!cfg) return null;
+
+    for (const section of cfg.sections) {
+        if (section.night && activeChecklist?.poste !== "nuit") continue;
+        for (const field of section.fields) {
+            if (!field.id || !String(field.id).startsWith("cpt_") || field.type !== "number") continue;
+
+            const input = document.getElementById(field.id);
+            if (!input) continue;
+
+            const raw = input.value.trim();
+            if (!raw) continue;
+
+            const currentValue = Number(raw);
+            if (Number.isNaN(currentValue)) continue;
+
+            const previousValue = await getPreviousCounterValue(id, field.id, activeChecklist?.recordId || null);
+            if (previousValue !== null && currentValue < previousValue) {
+                return `Le compteur ${field.label} ne peut pas être inférieur à l'ancien compteur. L'ancien compteur est : ${previousValue}.`;
+            }
+        }
+    }
+
+    return null;
+}
+
 
 /* ---------- ENREGISTREMENT VERS SUPABASE ---------- */
 
@@ -435,6 +537,12 @@ async function saveChecklist(id) {
     const missing = checklistMissingFields();
     if (missing.length) {
         canLeaveChecklist();
+        return;
+    }
+
+    const counterError = await validateCounterFields(id);
+    if (counterError) {
+        alert(counterError);
         return;
     }
 
