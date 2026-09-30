@@ -19,6 +19,10 @@ function getPosteFromDate(date = new Date()) {
     return "nuit";
 }
 
+function currentPoste() {
+    return getPosteFromDate(new Date());
+}
+
 
 /* ---------- AFFICHER LE DASHBOARD ---------- */
 
