@@ -210,8 +210,7 @@ registerChecklist("vide", {
         },
 
         {
-            title: "📊 Fonctionnement des pompes (nuit)",
-            night: true,
+            title: "📊 Fonctionnement des pompes",
             fields: [
                 { id: "p1_pourcent", type: "number", label: "% fonctionnement Pompe 1" },
                 { id: "p1_heures", type: "number", label: "Compteur entretien Pompe 1 (h)" },
