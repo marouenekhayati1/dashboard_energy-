@@ -111,6 +111,33 @@ function historyValue(record, key) {
     return value === null || value === undefined ? "" : typeof value === "object" ? JSON.stringify(value) : String(value);
 }
 
+function historyFilterValue(record, key) {
+    if (key !== "recorded_at") return historyValue(record, key);
+    const timestamp = new Date(record.recorded_at);
+    return Number.isNaN(timestamp.getTime()) ? historyValue(record, key) : timestamp.toLocaleString("fr-FR");
+}
+
+function matchesHistoryColumnFilter(record, key, filter) {
+    const comparison = /^\s*(>=|<=|>|<|=)\s*(-?\d+(?:[.,]\d+)?)\s*$/.exec(filter);
+    if (comparison) {
+        const rawValue = historyValue(record, key).trim();
+        if (!rawValue) return false;
+        const value = Number(rawValue.replace(",", "."));
+        const target = Number(comparison[2].replace(",", "."));
+        if (!Number.isFinite(value)) return false;
+
+        switch (comparison[1]) {
+            case ">": return value > target;
+            case "<": return value < target;
+            case ">=": return value >= target;
+            case "<=": return value <= target;
+            default: return value === target;
+        }
+    }
+
+    return historyFilterValue(record, key).toLocaleLowerCase("fr-FR").includes(filter.toLocaleLowerCase("fr-FR"));
+}
+
 function historyDateKey(date) {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
@@ -131,7 +158,7 @@ function renderHistoryTable() {
         const dateKey = Number.isNaN(timestamp.getTime()) ? "" : historyDateKey(timestamp);
         if (dateFrom && dateKey < dateFrom) return false;
         if (dateTo && dateKey > dateTo) return false;
-        return columnFilters.every(([key, value]) => historyValue(record, key).toLocaleLowerCase("fr-FR").includes(value));
+        return columnFilters.every(([key, value]) => matchesHistoryColumnFilter(record, key, value));
     });
 
     visibleRows.sort((left, right) => {
