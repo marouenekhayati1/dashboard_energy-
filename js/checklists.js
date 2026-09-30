@@ -427,12 +427,10 @@ registerChecklist("thermo", {
 
         {
             title: "🌀 Turbines",
-            activeField: "thermo_turbine_etat",
             fields: [
-                { id: "thermo_turbine_etat", type: "radio", label: "État", options: ["Active", "Inactive"] },
-                { id: "turbine1", type: "text", label: "Inspection turbine thermo 1" },
-                { id: "turbine2", type: "text", label: "Inspection turbine thermo 2" },
-                { id: "turbine3", type: "text", label: "Inspection turbine thermo 3" }
+                { id: "turbine1", type: "radio", label: "Inspection turbine thermo 1", options: ["Active", "Inactive"] },
+                { id: "turbine2", type: "radio", label: "Inspection turbine thermo 2", options: ["Active", "Inactive"] },
+                { id: "turbine3", type: "radio", label: "Inspection turbine thermo 3", options: ["Active", "Inactive"] }
             ]
         },
 
