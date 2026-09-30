@@ -72,6 +72,8 @@ async function loadHistoryV2() {
             : "—";
         const timestamp = new Date(record.recorded_at);
         const date = Number.isNaN(timestamp.getTime()) ? "Date inconnue" : timestamp.toLocaleString("fr-FR");
+        const computedPoste = getPosteFromDate(timestamp);
+        const poste = computedPoste || "—";
         const label = HISTO_V2_LABELS[record.utility_name] || record.utility_name || "—";
         const fieldCount = record.data ? Object.keys(record.data).filter((key) => key !== "_modifications").length : 0;
 
@@ -81,7 +83,7 @@ async function loadHistoryV2() {
             <td>${renderModificationAudit(record.data)}</td>
             <td style="white-space:nowrap">${escapeHistoryV2(date)}</td>
             <td style="white-space:nowrap">${escapeHistoryV2(label)}</td>
-            <td>${escapeHistoryV2(record.poste || "—")}</td>
+            <td>${escapeHistoryV2(poste)}</td>
             <td style="white-space:nowrap">${escapeHistoryV2(technician || "—")}</td>
             <td><button class="btn btn-secondary" type="button" data-history-v2-detail="${index}" style="padding:6px 12px;font-size:12px">👁️ Voir (${fieldCount})</button></td>
             <td>${canEdit ? `<button class="btn btn-success" type="button" data-history-v2-edit="${index}" style="padding:6px 12px;font-size:12px">Modifier</button>` : "—"}</td>

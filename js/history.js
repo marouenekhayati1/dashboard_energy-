@@ -113,14 +113,17 @@ async function loadHistory() {
         const tech = r.technicians
             ? r.technicians.first_name + " " + r.technicians.last_name
             : "—";
-        const date = new Date(r.recorded_at).toLocaleString("fr-FR");
+        const recordedAt = new Date(r.recorded_at);
+        const date = recordedAt.toLocaleString("fr-FR");
+        const computedPoste = getPosteFromDate(recordedAt);
+        const poste = computedPoste || "—";
         const label = HISTO_LABELS[r.utility_name] || r.utility_name;
 
         html += '<tr>'
               + '<td>' + renderModificationAudit(r.data) + '</td>'
               + '<td style="white-space:nowrap">' + date + '</td>'
               + '<td style="white-space:nowrap">' + label + '</td>'
-              + '<td>' + (r.poste || "—") + '</td>'
+              + '<td>' + poste + '</td>'
               + '<td style="white-space:nowrap">' + tech + '</td>'
               + '<td>' + (canEdit
                   ? '<button class="btn btn-success" type="button" data-edit-measurement="' + encodeURIComponent(r.id) + '">Modifier</button>'

@@ -12,10 +12,10 @@ function registerChecklist(id, config) {
 
 /* ---------- POSTE ACTUEL ---------- */
 
-function currentPoste() {
-    const h = new Date().getHours();
+function getPosteFromDate(date = new Date()) {
+    const h = new Date(date).getHours();
     if (h >= 6 && h < 14) return "matin";
-    if (h >= 14 && h < 22) return "apres-midi";
+    if (h >= 14 && h < 20) return "apres-midi";
     return "nuit";
 }
 
@@ -172,10 +172,10 @@ async function openChecklist(id, record = null) {
     return true;
 }
 
-function getPosteInterval(poste) {
-    const now = new Date();
+function getPosteInterval(poste, anchorDate = new Date()) {
+    const now = new Date(anchorDate);
     const start = new Date(now);
-    const startHour = poste === "matin" ? 6 : poste === "apres-midi" ? 14 : 22;
+    const startHour = poste === "matin" ? 6 : poste === "apres-midi" ? 14 : 20;
     start.setHours(startHour, 0, 0, 0);
 
     if (poste === "nuit" && now.getHours() < 6) {
