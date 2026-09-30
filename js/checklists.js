@@ -430,7 +430,8 @@ registerChecklist("thermo", {
             fields: [
                 { id: "turbine1", type: "radio", label: "Inspection turbine thermo 1", options: ["Active", "Inactive"] },
                 { id: "turbine2", type: "radio", label: "Inspection turbine thermo 2", options: ["Active", "Inactive"] },
-                { id: "turbine3", type: "radio", label: "Inspection turbine thermo 3", options: ["Active", "Inactive"] }
+                { id: "turbine3", type: "radio", label: "Inspection turbine thermo 3", options: ["Active", "Inactive"] },
+                { id: "turbine4", type: "radio", label: "Inspection turbine thermo 4", options: ["Active", "Inactive"] }
             ]
         },
 
