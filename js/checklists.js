@@ -210,7 +210,8 @@ registerChecklist("vide", {
         },
 
         {
-            title: "📊 Fonctionnement des pompes",
+            title: "📊 Fonctionnement des pompes (nuit)",
+            night: true,
             fields: [
                 { id: "p1_pourcent", type: "number", label: "% fonctionnement Pompe 1" },
                 { id: "p1_heures", type: "number", label: "Compteur entretien Pompe 1 (h)" },
@@ -257,7 +258,8 @@ registerChecklist("compresseurs", {
         },
 
         {
-            title: "🌡️ Compresseurs",
+            title: "🌡️ Compresseurs (nuit)",
+            night: true,
             fields: [
                 { id: "c2_temp", type: "number", label: "Température Compresseur 2 (°C)" },
                 { id: "c2_heures", type: "number", label: "Compteur entretien Compresseur 2 (h)" },
