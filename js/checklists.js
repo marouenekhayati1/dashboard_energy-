@@ -210,15 +210,22 @@ registerChecklist("vide", {
         },
 
         {
-            title: "📊 Fonctionnement des pompes",
+            title: "📊 % fonctionnement des pompes",
             fields: [
                 { id: "p1_pourcent", type: "number", label: "% fonctionnement Pompe 1" },
-                { id: "p1_heures", type: "number", label: "Compteur entretien Pompe 1 (h)" },
                 { id: "p2_pourcent", type: "number", label: "% fonctionnement Pompe 2" },
-                { id: "p2_heures", type: "number", label: "Compteur entretien Pompe 2 (h)" },
                 { id: "p3_pourcent", type: "number", label: "% fonctionnement Pompe 3" },
+                { id: "p4_pourcent", type: "number", label: "% fonctionnement Pompe 4" }
+            ]
+        },
+
+        {
+            title: "🧰 Compteurs d'entretien (nuit)",
+            night: true,
+            fields: [
+                { id: "p1_heures", type: "number", label: "Compteur entretien Pompe 1 (h)" },
+                { id: "p2_heures", type: "number", label: "Compteur entretien Pompe 2 (h)" },
                 { id: "p3_heures", type: "number", label: "Compteur entretien Pompe 3 (h)" },
-                { id: "p4_pourcent", type: "number", label: "% fonctionnement Pompe 4" },
                 { id: "p4_heures", type: "number", label: "Compteur entretien Pompe 4 (h)" }
             ]
         },
