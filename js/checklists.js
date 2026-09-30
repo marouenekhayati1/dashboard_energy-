@@ -428,9 +428,9 @@ registerChecklist("thermo", {
         {
             title: "🌀 Turbines",
             fields: [
-                { id: "turbine1", type: "radio", label: "Inspection turbine thermo 1", options: ["Active", "Inactive"] },
-                { id: "turbine2", type: "radio", label: "Inspection turbine thermo 2", options: ["Active", "Inactive"] },
-                { id: "turbine3", type: "radio", label: "Inspection turbine thermo 3", options: ["Active", "Inactive"] }
+                { id: "turbine1", type: "radio", label: "Inspection thermo fab 1", options: ["Active", "Inactive"] },
+                { id: "turbine2", type: "radio", label: "Inspection thermo fab 2", options: ["Active", "Inactive"] },
+                { id: "turbine3", type: "radio", label: "Inspection thermo PS", options: ["Active", "Inactive"] }
             ]
         },
 
