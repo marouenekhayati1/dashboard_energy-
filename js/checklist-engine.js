@@ -198,10 +198,19 @@ function getPosteInterval(poste, anchorDate = new Date()) {
     return { start, end };
 }
 
+function getChecklistRadioValue(fieldId) {
+    const selected = document.querySelector('input[name="' + fieldId + '"]:checked');
+    if (selected) return selected.value;
+    if (activeChecklist?.recordId && activeChecklist.data?.[fieldId] !== undefined) {
+        return String(activeChecklist.data[fieldId]);
+    }
+    return null;
+}
+
 function isChecklistFieldRequired(field, section = null) {
     if (field.required === false || field.id === "commentaire" || field.id === "dosage_info") return false;
     if (section?.activeField && field.id !== section.activeField) {
-        const state = document.querySelector('input[name="' + section.activeField + '"]:checked')?.value;
+        const state = getChecklistRadioValue(section.activeField);
         if (state === "Inactive") return false;
     }
     return true;
@@ -218,7 +227,7 @@ function checklistMissingFields() {
             if (!isChecklistFieldRequired(field, section)) continue;
             let hasValue = false;
             if (field.type === "radio") {
-                hasValue = Boolean(document.querySelector('input[name="' + field.id + '"]:checked'));
+                hasValue = Boolean(getChecklistRadioValue(field.id));
             } else if (field.type === "checkbox-group") {
                 hasValue = Boolean(document.querySelector('input[name="' + field.id + '"]:checked'));
             } else if (field.type === "checkbox") {
@@ -616,7 +625,13 @@ async function saveChecklist(id) {
 
             if (f.type === "radio") {
                 const checked = document.querySelector('input[name="' + f.id + '"]:checked');
-                values[f.id] = checked ? checked.value : "";
+                if (checked) {
+                    values[f.id] = checked.value;
+                } else if (activeChecklist.recordId && activeChecklist.data[f.id] !== undefined) {
+                    values[f.id] = activeChecklist.data[f.id];
+                } else {
+                    values[f.id] = "";
+                }
             }
             else if (f.type === "checkbox") {
                 values[f.id] = el.checked ? f.label2 : "";
