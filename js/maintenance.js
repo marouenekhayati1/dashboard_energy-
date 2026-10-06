@@ -368,20 +368,26 @@ const MAINTENANCE_UTILITIES = [
         });
         error = updateError || (data?.success ? null : { message: "La modification n'a pas été appliquée." });
       } else {
-        ({ error } = await window.db.from("maintenance_logs").insert({
-          task_id: task.id,
-          utility_name: utility.id,
-          utility_label: utility.label,
-          equipment_name: equipmentName,
-          task_title: task.title,
-          operating_hours: hasCounter ? Number(hours) : null,
-          maintenance_date: timeMode === "manual" ? selectedDate : localDateString(now),
-          poste,
-          work_order_number: workOrderNumber || null,
-          comment,
-          technician_id: String(session?.id || ""),
-          technician_name: [session?.first_name, session?.last_name].filter(Boolean).join(" ")
-        }));
+        const result = await window.db.from("maintenance_logs")
+          .insert({
+            task_id: task.id,
+            utility_name: utility.id,
+            utility_label: utility.label,
+            equipment_name: equipmentName,
+            task_title: task.title,
+            operating_hours: hasCounter ? Number(hours) : null,
+            maintenance_date: timeMode === "manual" ? selectedDate : localDateString(now),
+            poste,
+            work_order_number: workOrderNumber || null,
+            comment,
+            technician_id: String(session?.id || ""),
+            technician_name: [session?.first_name, session?.last_name].filter(Boolean).join(" ")
+          })
+          .select("id")
+          .single();
+        error = result.error || (!result.data?.id
+          ? { message: "L'enregistrement n'a pas pu être confirmé dans la base de données." }
+          : null);
       }
 
       if (error) {

@@ -33,13 +33,16 @@ const SupabaseService = (() => {
 
   async function registerTechnician({ first_name, last_name, matricule }) {
     const db = getClient();
-    return db.from("technicians").insert({
-      first_name,
-      last_name,
-      matricule,
-      role: "technician",
-      is_active: true
-    });
+    return db.from("technicians")
+      .insert({
+        first_name,
+        last_name,
+        matricule,
+        role: "technician",
+        is_active: true
+      })
+      .select("id")
+      .single();
   }
 
   async function checkMatriculeExists(matricule) {

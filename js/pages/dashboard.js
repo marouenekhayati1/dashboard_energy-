@@ -273,18 +273,21 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const { error } = await db.from("anomalies").insert({
-      technician_id: session.id,
-      utility_name: document.getElementById("ano-utility").value || null,
-      title,
-      description: document.getElementById("ano-desc").value.trim(),
-      priority: document.getElementById("ano-priority").value,
-      status: "ouverte",
-      created_at: new Date().toISOString()
-    });
+    const { data, error } = await db.from("anomalies")
+      .insert({
+        technician_id: session.id,
+        utility_name: document.getElementById("ano-utility").value || null,
+        title,
+        description: document.getElementById("ano-desc").value.trim(),
+        priority: document.getElementById("ano-priority").value,
+        status: "ouverte",
+        created_at: new Date().toISOString()
+      })
+      .select("id")
+      .single();
 
-    if (error) {
-      alert("Erreur : " + error.message);
+    if (error || !data?.id) {
+      alert("Erreur : " + (error?.message || "L'enregistrement n'a pas pu être confirmé dans la base de données."));
       return;
     }
 
@@ -367,9 +370,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const update = { status };
     if (status === "resolue") update.resolved_at = new Date().toISOString();
 
-    const { error } = await db.from("anomalies").update(update).eq("id", id);
-    if (error) {
-      alert("Erreur : " + error.message);
+    const { data, error } = await db.from("anomalies")
+      .update(update)
+      .eq("id", id)
+      .select("id")
+      .maybeSingle();
+    if (error || !data?.id) {
+      alert("Erreur : " + (error?.message || "Aucune anomalie n'a été modifiée."));
       return;
     }
     loadAnomalies();

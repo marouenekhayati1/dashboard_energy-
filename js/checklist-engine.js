@@ -276,7 +276,16 @@ async function validateCounterInput(fieldId) {
         return;
     }
 
-    const previousValue = await getPreviousCounterValue(activeChecklist.id, fieldId, activeChecklist.recordId || null);
+    let previousValue;
+    try {
+        previousValue = await getPreviousCounterValue(activeChecklist.id, fieldId, activeChecklist.recordId || null);
+    } catch (requestError) {
+        error.textContent = "Impossible de vérifier le compteur précédent : " + requestError.message;
+        error.hidden = false;
+        input.setAttribute("aria-invalid", "true");
+        return;
+    }
+
     if (previousValue !== null && currentValue < previousValue) {
         error.textContent = `Le compteur ${field.label} ne peut pas être inférieur à l'ancien compteur. L'ancien compteur est : ${previousValue}.`;
         error.hidden = false;
@@ -504,7 +513,12 @@ async function getPreviousCounterValue(utilityName, fieldId, currentRecordId = n
     }
 
     const { data, error } = await query;
-    if (error || !Array.isArray(data)) return null;
+    if (error) {
+        throw new Error(error.message);
+    }
+    if (!Array.isArray(data)) {
+        throw new Error("La réponse de la base de données est invalide.");
+    }
 
     for (const row of data) {
         const value = row?.data?.[fieldId];
@@ -534,7 +548,12 @@ async function validateCounterFields(id) {
             const currentValue = Number(raw);
             if (Number.isNaN(currentValue)) continue;
 
-            const previousValue = await getPreviousCounterValue(id, field.id, activeChecklist?.recordId || null);
+            let previousValue;
+            try {
+                previousValue = await getPreviousCounterValue(id, field.id, activeChecklist?.recordId || null);
+            } catch (requestError) {
+                return `Impossible de vérifier le compteur ${field.label} : ${requestError.message}`;
+            }
             if (previousValue !== null && currentValue < previousValue) {
                 return `Le compteur ${field.label} ne peut pas être inférieur à l'ancien compteur. L'ancien compteur est : ${previousValue}.`;
             }
@@ -643,18 +662,21 @@ async function saveChecklist(id) {
             return;
         }
 
-        result = await db.from("measurements").insert({
-            technician_id: session.id,
-            value: 0,
-            data: values,
-            poste: activeChecklist.poste,
-            utility_name: id,
-            recorded_at: new Date().toISOString()
-        });
+        result = await db.from("measurements")
+            .insert({
+                technician_id: session.id,
+                value: 0,
+                data: values,
+                poste: activeChecklist.poste,
+                utility_name: id,
+                recorded_at: new Date().toISOString()
+            })
+            .select("id")
+            .single();
     }
 
-    if (result.error) {
-        alert("Erreur : " + result.error.message);
+    if (result.error || (!activeChecklist.recordId && !result.data?.id)) {
+        alert("Erreur : " + (result.error?.message || "L'enregistrement n'a pas pu être confirmé dans la base de données."));
         return;
     }
 
