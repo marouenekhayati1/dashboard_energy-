@@ -58,6 +58,8 @@ const MAINTENANCE_UTILITIES = [
 
 (() => {
   let maintenanceTasks = [];
+  let maintenanceLogs = [];
+  let editingMaintenanceLog = null;
   let maintenanceSaveInProgress = false;
 
   function escapeMaintenanceHtml(value) {
@@ -222,6 +224,95 @@ const MAINTENANCE_UTILITIES = [
     return "—";
   }
 
+  function cancelMaintenanceEdit() {
+    editingMaintenanceLog = null;
+    const utilitySelect = document.getElementById("maintenance-utility");
+    const equipmentSelect = document.getElementById("maintenance-equipment");
+    const taskSelect = document.getElementById("maintenance-task");
+    const addTaskButton = document.getElementById("maintenance-show-new-task");
+    const hoursInput = document.getElementById("maintenance-hours");
+    const saveButton = document.getElementById("maintenance-save");
+    const dateInput = document.getElementById("maintenance-date");
+
+    utilitySelect.disabled = false;
+    utilitySelect.value = "";
+    equipmentSelect.disabled = true;
+    equipmentSelect.innerHTML = '<option value="">— Sélectionner une utilité d’abord —</option>';
+    taskSelect.disabled = true;
+    taskSelect.innerHTML = '<option value="">— Sélectionner un équipement d’abord —</option>';
+    addTaskButton.disabled = true;
+    document.getElementById("maintenance-new-task-row").classList.add("hidden");
+    hoursInput.value = "";
+    hoursInput.disabled = true;
+    hoursInput.required = false;
+    document.getElementById("maintenance-work-order").value = "";
+    document.getElementById("maintenance-comment").value = "";
+    document.getElementById("maintenance-time-mode").value = "realtime";
+    dateInput.value = "";
+    dateInput.disabled = true;
+    dateInput.required = false;
+    document.getElementById("maintenance-date-group").classList.add("hidden");
+    document.getElementById("maintenance-cancel-edit").hidden = true;
+    saveButton.textContent = "Enregistrer l'intervention";
+    saveButton.disabled = true;
+    showMaintenanceMessage("");
+  }
+
+  async function editMaintenanceLog(recordId) {
+    if (maintenanceSaveInProgress) return;
+    const record = maintenanceLogs.find((item) => String(item.id) === String(recordId));
+    const session = getSession();
+    if (!record || !(session?.role === "admin" || String(session?.id) === String(record.technician_id))) {
+      showMaintenanceMessage("Vous pouvez uniquement modifier vos propres interventions.");
+      return;
+    }
+
+    const utility = MAINTENANCE_UTILITIES.find((item) => item.id === record.utility_name);
+    if (!utility || !utility.equipment.includes(record.equipment_name)) {
+      showMaintenanceMessage("L'utilité ou l'équipement de cette intervention n'est plus disponible.");
+      return;
+    }
+
+    editingMaintenanceLog = record;
+    const utilitySelect = document.getElementById("maintenance-utility");
+    const equipmentSelect = document.getElementById("maintenance-equipment");
+    const addTaskButton = document.getElementById("maintenance-show-new-task");
+    utilitySelect.value = utility.id;
+    utilitySelect.disabled = true;
+    equipmentSelect.innerHTML = '<option value="">— Sélectionner un équipement —</option>' + utility.equipment.map((name) => `<option value="${escapeMaintenanceHtml(name)}">${escapeMaintenanceHtml(name)}</option>`).join("");
+    equipmentSelect.value = record.equipment_name;
+    equipmentSelect.disabled = true;
+    updateEquipmentControls();
+    utilitySelect.disabled = true;
+    equipmentSelect.disabled = true;
+    addTaskButton.disabled = true;
+    document.getElementById("maintenance-new-task-row").classList.add("hidden");
+    await loadTasks();
+
+    if (!maintenanceTasks.some((task) => String(task.id) === String(record.task_id))) {
+      cancelMaintenanceEdit();
+      showMaintenanceMessage("La tâche de cette intervention n'existe plus pour cet équipement.");
+      return;
+    }
+
+    document.getElementById("maintenance-task").value = record.task_id;
+    document.getElementById("maintenance-hours").value = record.operating_hours ?? "";
+    document.getElementById("maintenance-work-order").value = record.work_order_number || "";
+    document.getElementById("maintenance-comment").value = record.comment || "";
+    document.getElementById("maintenance-time-mode").value = "manual";
+    const dateInput = document.getElementById("maintenance-date");
+    dateInput.value = record.maintenance_date;
+    dateInput.disabled = false;
+    dateInput.required = true;
+    document.getElementById("maintenance-date-group").classList.remove("hidden");
+    document.getElementById("maintenance-cancel-edit").hidden = false;
+    const saveButton = document.getElementById("maintenance-save");
+    saveButton.disabled = false;
+    saveButton.textContent = "Enregistrer les modifications";
+    showMaintenanceMessage("Modification de l'intervention sélectionnée.", false);
+    document.getElementById("maintenance-zone").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   async function saveMaintenanceLog() {
     if (maintenanceSaveInProgress) return;
 
@@ -257,25 +348,41 @@ const MAINTENANCE_UTILITIES = [
     const session = getSession();
     const now = new Date();
     const poste = currentPoste();
+    const editingRecord = editingMaintenanceLog;
     maintenanceSaveInProgress = true;
     saveButton.disabled = true;
     saveButton.textContent = "Enregistrement...";
 
     try {
-      const { error } = await window.db.from("maintenance_logs").insert({
-        task_id: task.id,
-        utility_name: utility.id,
-        utility_label: utility.label,
-        equipment_name: equipmentName,
-        task_title: task.title,
-        operating_hours: hasCounter ? Number(hours) : null,
-        maintenance_date: timeMode === "manual" ? selectedDate : localDateString(now),
-        poste,
-        work_order_number: workOrderNumber || null,
-        comment,
-        technician_id: String(session?.id || ""),
-        technician_name: [session?.first_name, session?.last_name].filter(Boolean).join(" ")
-      });
+      let error = null;
+      if (editingRecord) {
+        const { data, error: updateError } = await window.db.rpc("update_maintenance_log", {
+          p_record_id: editingRecord.id,
+          p_technician_id: String(session?.id || ""),
+          p_matricule: String(session?.matricule || ""),
+          p_task_id: task.id,
+          p_operating_hours: hasCounter ? Number(hours) : null,
+          p_maintenance_date: timeMode === "manual" ? selectedDate : localDateString(now),
+          p_work_order_number: workOrderNumber || null,
+          p_comment: comment
+        });
+        error = updateError || (data?.success ? null : { message: "La modification n'a pas été appliquée." });
+      } else {
+        ({ error } = await window.db.from("maintenance_logs").insert({
+          task_id: task.id,
+          utility_name: utility.id,
+          utility_label: utility.label,
+          equipment_name: equipmentName,
+          task_title: task.title,
+          operating_hours: hasCounter ? Number(hours) : null,
+          maintenance_date: timeMode === "manual" ? selectedDate : localDateString(now),
+          poste,
+          work_order_number: workOrderNumber || null,
+          comment,
+          technician_id: String(session?.id || ""),
+          technician_name: [session?.first_name, session?.last_name].filter(Boolean).join(" ")
+        }));
+      }
 
       if (error) {
         showMaintenanceMessage("Erreur lors de l'enregistrement : " + error.message);
@@ -286,13 +393,16 @@ const MAINTENANCE_UTILITIES = [
       taskSelect.value = "";
       document.getElementById("maintenance-work-order").value = "";
       document.getElementById("maintenance-comment").value = "";
-      showMaintenanceMessage("Intervention enregistrée. La date et le poste ont été enregistrés.", false);
+      if (editingRecord) {
+        cancelMaintenanceEdit();
+      }
+      showMaintenanceMessage(editingRecord ? "Modifications enregistrées." : "Intervention enregistrée. La date et le poste ont été enregistrés.", false);
       await loadMaintenanceLogs();
     } catch (error) {
       showMaintenanceMessage("Erreur lors de l'enregistrement : " + error.message);
     } finally {
       maintenanceSaveInProgress = false;
-      saveButton.textContent = "Enregistrer l'intervention";
+      saveButton.textContent = editingMaintenanceLog ? "Enregistrer les modifications" : "Enregistrer l'intervention";
       saveButton.disabled = !taskSelect.value;
     }
   }
@@ -301,28 +411,32 @@ const MAINTENANCE_UTILITIES = [
     const body = document.getElementById("maintenance-log-body");
     const info = document.getElementById("maintenance-info");
     if (!body || !window.db) return;
-    body.innerHTML = '<tr><td colspan="9">Chargement...</td></tr>';
+    body.innerHTML = '<tr><td colspan="10">Chargement...</td></tr>';
     const { data, error } = await window.db.from("maintenance_logs")
-      .select("utility_label,equipment_name,task_title,operating_hours,maintenance_date,poste,work_order_number,comment,technician_name")
+      .select("id,task_id,technician_id,utility_name,utility_label,equipment_name,task_title,operating_hours,maintenance_date,poste,work_order_number,comment,technician_name")
       .order("maintenance_date", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(200);
 
     if (error) {
-      body.innerHTML = '<tr><td colspan="9">Erreur de chargement des interventions.</td></tr>';
+      body.innerHTML = '<tr><td colspan="10">Erreur de chargement des interventions.</td></tr>';
       if (info) info.textContent = error.message;
       return;
     }
 
     if (!data?.length) {
-      body.innerHTML = '<tr><td colspan="9">Aucune intervention enregistrée.</td></tr>';
+      maintenanceLogs = [];
+      body.innerHTML = '<tr><td colspan="10">Aucune intervention enregistrée.</td></tr>';
       if (info) info.textContent = "";
       return;
     }
 
+    maintenanceLogs = data;
+    const session = getSession();
     body.innerHTML = data.map((log) => {
       const date = new Date(`${log.maintenance_date}T12:00:00`).toLocaleDateString("fr-FR");
       const hours = log.operating_hours === null || log.operating_hours === undefined ? "—" : `${Number(log.operating_hours).toLocaleString("fr-FR")} h`;
+      const canEdit = session?.role === "admin" || String(session?.id) === String(log.technician_id);
       return `<tr>
         <td style="white-space:nowrap">${escapeMaintenanceHtml(date)}</td>
         <td>${escapeMaintenanceHtml(posteLabel(log.poste))}</td>
@@ -333,6 +447,7 @@ const MAINTENANCE_UTILITIES = [
         <td>${escapeMaintenanceHtml(log.work_order_number || "—")}</td>
         <td>${escapeMaintenanceHtml(log.comment || "—")}</td>
         <td>${escapeMaintenanceHtml(log.technician_name)}</td>
+        <td>${canEdit ? `<button class="btn btn-success" type="button" data-maintenance-edit="${escapeMaintenanceHtml(log.id)}">Modifier</button>` : "—"}</td>
       </tr>`;
     }).join("");
     if (info) info.textContent = `${data.length} intervention(s) récente(s)`;
@@ -355,6 +470,7 @@ const MAINTENANCE_UTILITIES = [
     const newTaskRow = document.getElementById("maintenance-new-task-row");
     const newTaskInput = document.getElementById("maintenance-new-task");
     const saveButton = document.getElementById("maintenance-save");
+    const cancelEditButton = document.getElementById("maintenance-cancel-edit");
     const timeModeSelect = document.getElementById("maintenance-time-mode");
     const dateGroup = document.getElementById("maintenance-date-group");
     const dateInput = document.getElementById("maintenance-date");
@@ -411,6 +527,11 @@ const MAINTENANCE_UTILITIES = [
       }
     });
     saveButton.addEventListener("click", saveMaintenanceLog);
+    cancelEditButton.addEventListener("click", cancelMaintenanceEdit);
+    document.getElementById("maintenance-log-body").addEventListener("click", (event) => {
+      const editButton = event.target.closest("[data-maintenance-edit]");
+      if (editButton) editMaintenanceLog(editButton.dataset.maintenanceEdit);
+    });
     hoursInput.addEventListener("input", () => showMaintenanceMessage(""));
   });
 
