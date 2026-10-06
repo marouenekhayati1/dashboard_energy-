@@ -227,6 +227,10 @@ const MAINTENANCE_UTILITIES = [
     const taskId = document.getElementById("maintenance-task").value;
     const task = maintenanceTasks.find((item) => item.id === taskId);
     const hoursInput = document.getElementById("maintenance-hours");
+    const timeMode = document.getElementById("maintenance-time-mode").value;
+    const selectedDate = document.getElementById("maintenance-date").value;
+    const workOrderNumber = document.getElementById("maintenance-work-order").value.trim();
+    const comment = document.getElementById("maintenance-comment").value.trim();
     const hasCounter = hasOperatingHourCounter(utility?.id || "", equipmentName);
     const hours = hoursInput.value.trim();
 
@@ -237,6 +241,11 @@ const MAINTENANCE_UTILITIES = [
     if (hasCounter && (!hours || !Number.isFinite(Number(hours)) || Number(hours) < 0)) {
       showMaintenanceMessage("Saisis un compteur d'heures valide pour cet équipement.");
       hoursInput.focus();
+      return;
+    }
+    if (timeMode === "manual" && !selectedDate) {
+      showMaintenanceMessage("Sélectionne la date de l'intervention.");
+      document.getElementById("maintenance-date").focus();
       return;
     }
 
@@ -250,8 +259,10 @@ const MAINTENANCE_UTILITIES = [
       equipment_name: equipmentName,
       task_title: task.title,
       operating_hours: hasCounter ? Number(hours) : null,
-      maintenance_date: localDateString(now),
+      maintenance_date: timeMode === "manual" ? selectedDate : localDateString(now),
       poste,
+      work_order_number: workOrderNumber || null,
+      comment,
       technician_id: String(session?.id || ""),
       technician_name: [session?.first_name, session?.last_name].filter(Boolean).join(" ")
     });
@@ -263,8 +274,10 @@ const MAINTENANCE_UTILITIES = [
 
     hoursInput.value = "";
     document.getElementById("maintenance-task").value = "";
+    document.getElementById("maintenance-work-order").value = "";
+    document.getElementById("maintenance-comment").value = "";
     document.getElementById("maintenance-save").disabled = true;
-    showMaintenanceMessage("Intervention enregistrée. Date et poste ajoutés automatiquement.", false);
+    showMaintenanceMessage("Intervention enregistrée. La date et le poste ont été enregistrés.", false);
     await loadMaintenanceLogs();
   }
 
@@ -272,21 +285,21 @@ const MAINTENANCE_UTILITIES = [
     const body = document.getElementById("maintenance-log-body");
     const info = document.getElementById("maintenance-info");
     if (!body || !window.db) return;
-    body.innerHTML = '<tr><td colspan="7">Chargement...</td></tr>';
+    body.innerHTML = '<tr><td colspan="9">Chargement...</td></tr>';
     const { data, error } = await window.db.from("maintenance_logs")
-      .select("utility_label,equipment_name,task_title,operating_hours,maintenance_date,poste,technician_name")
+      .select("utility_label,equipment_name,task_title,operating_hours,maintenance_date,poste,work_order_number,comment,technician_name")
       .order("maintenance_date", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(200);
 
     if (error) {
-      body.innerHTML = '<tr><td colspan="7">Erreur de chargement des interventions.</td></tr>';
+      body.innerHTML = '<tr><td colspan="9">Erreur de chargement des interventions.</td></tr>';
       if (info) info.textContent = error.message;
       return;
     }
 
     if (!data?.length) {
-      body.innerHTML = '<tr><td colspan="7">Aucune intervention enregistrée.</td></tr>';
+      body.innerHTML = '<tr><td colspan="9">Aucune intervention enregistrée.</td></tr>';
       if (info) info.textContent = "";
       return;
     }
@@ -301,6 +314,8 @@ const MAINTENANCE_UTILITIES = [
         <td>${escapeMaintenanceHtml(log.equipment_name)}</td>
         <td>${escapeMaintenanceHtml(log.task_title)}</td>
         <td>${escapeMaintenanceHtml(hours)}</td>
+        <td>${escapeMaintenanceHtml(log.work_order_number || "—")}</td>
+        <td>${escapeMaintenanceHtml(log.comment || "—")}</td>
         <td>${escapeMaintenanceHtml(log.technician_name)}</td>
       </tr>`;
     }).join("");
@@ -324,6 +339,20 @@ const MAINTENANCE_UTILITIES = [
     const newTaskRow = document.getElementById("maintenance-new-task-row");
     const newTaskInput = document.getElementById("maintenance-new-task");
     const saveButton = document.getElementById("maintenance-save");
+    const timeModeSelect = document.getElementById("maintenance-time-mode");
+    const dateGroup = document.getElementById("maintenance-date-group");
+    const dateInput = document.getElementById("maintenance-date");
+
+    function updateMaintenanceDateMode() {
+      const chooseDate = timeModeSelect.value === "manual";
+      dateGroup.classList.toggle("hidden", !chooseDate);
+      dateInput.disabled = !chooseDate;
+      dateInput.required = chooseDate;
+      if (!chooseDate) dateInput.value = "";
+    }
+
+    timeModeSelect.addEventListener("change", updateMaintenanceDateMode);
+    updateMaintenanceDateMode();
 
     utilitySelect.innerHTML += MAINTENANCE_UTILITIES.map((utility) => `<option value="${utility.id}">${escapeMaintenanceHtml(utility.label)}</option>`).join("");
     utilitySelect.addEventListener("change", () => {

@@ -21,6 +21,8 @@ create table if not exists public.maintenance_logs (
   operating_hours numeric(12, 1) check (operating_hours is null or operating_hours >= 0),
   maintenance_date date not null,
   poste text not null check (poste in ('matin', 'apres-midi', 'nuit')),
+  work_order_number text,
+  comment text not null default '',
   technician_id text not null default '',
   technician_name text not null,
   created_at timestamptz not null default now()

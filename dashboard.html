@@ -1056,6 +1056,30 @@ tr:hover td {
             </div>
 
             <div class="form-grid" style="margin-top:18px">
+                <div class="form-group">
+                    <label for="maintenance-time-mode">Date de l'intervention</label>
+                    <select id="maintenance-time-mode">
+                        <option value="realtime">Temps réel (date du jour)</option>
+                        <option value="manual">Choisir une date</option>
+                    </select>
+                </div>
+                <div class="form-group hidden" id="maintenance-date-group">
+                    <label for="maintenance-date">Date choisie</label>
+                    <input id="maintenance-date" type="date" disabled>
+                </div>
+                <div class="form-group">
+                    <label for="maintenance-work-order">N° OT (facultatif)</label>
+                    <input id="maintenance-work-order" type="text" maxlength="80" placeholder="Ex. OT-2026-001">
+                </div>
+            </div>
+            <p class="range-info">Le poste est déterminé automatiquement selon l'heure actuelle.</p>
+
+            <div class="form-group" style="margin-top:18px">
+                <label for="maintenance-comment">Commentaire (facultatif)</label>
+                <textarea id="maintenance-comment" rows="3" maxlength="1000" placeholder="Détail de l'intervention"></textarea>
+            </div>
+
+            <div class="form-grid" style="margin-top:18px">
                 <div class="form-group" id="maintenance-hours-group">
                     <label for="maintenance-hours">Compteur d'heures de fonctionnement (h)</label>
                     <input id="maintenance-hours" type="number" min="0" step="0.1" disabled placeholder="Non disponible pour cet équipement">
@@ -1083,11 +1107,13 @@ tr:hover td {
                         <th>Équipement</th>
                         <th>Tâche</th>
                         <th>Compteur d'heures</th>
+                        <th>N° OT</th>
+                        <th>Commentaire</th>
                         <th>Technicien</th>
                     </tr>
                 </thead>
                 <tbody id="maintenance-log-body">
-                    <tr><td colspan="7">Chargement...</td></tr>
+                    <tr><td colspan="9">Chargement...</td></tr>
                 </tbody>
             </table>
         </div>
