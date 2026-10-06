@@ -220,7 +220,7 @@ registerChecklist("vide", {
         },
 
         {
-            title: "🧰 Compteurs d'entretien (nuit)",
+            title: "🧰 Compteurs d'entretien (saisie de nuit)",
             night: true,
             fields: [
                 { id: "p1_heures", type: "number", label: "Compteur entretien Pompe 1 (h)" },
@@ -268,16 +268,23 @@ registerChecklist("compresseurs", {
             night: true,
             fields: [
                 { id: "c2_temp", type: "number", label: "Température Compresseur 2 (°C)" },
-                { id: "c2_heures", type: "number", label: "Compteur entretien Compresseur 2 (h)" },
                 { id: "c3_temp", type: "number", label: "Température Compresseur 3 (°C)" },
-                { id: "c3_heures", type: "number", label: "Compteur entretien Compresseur 3 (h)" },
                 { id: "c4_temp", type: "number", label: "Température Compresseur 4 (°C)" },
-                { id: "c4_heures", type: "number", label: "Compteur entretien Compresseur 4 (h)" },
                 { id: "c5_temp", type: "number", label: "Température Compresseur 5 (°C)" },
-                { id: "c5_heures", type: "number", label: "Compteur entretien Compresseur 5 (h)" },
                 { id: "c6_temp", type: "number", label: "Température Compresseur 6 (°C)" },
+                { id: "c7_temp", type: "number", label: "Température Compresseur 7 (°C)" }
+            ]
+        },
+
+        {
+            title: "🧰 Compteurs d'entretien (saisie de nuit)",
+            night: true,
+            fields: [
+                { id: "c2_heures", type: "number", label: "Compteur entretien Compresseur 2 (h)" },
+                { id: "c3_heures", type: "number", label: "Compteur entretien Compresseur 3 (h)" },
+                { id: "c4_heures", type: "number", label: "Compteur entretien Compresseur 4 (h)" },
+                { id: "c5_heures", type: "number", label: "Compteur entretien Compresseur 5 (h)" },
                 { id: "c6_heures", type: "number", label: "Compteur entretien Compresseur 6 (h)" },
-                { id: "c7_temp", type: "number", label: "Température Compresseur 7 (°C)" },
                 { id: "c7_heures", type: "number", label: "Compteur entretien Compresseur 7 (h)" }
             ]
         },
