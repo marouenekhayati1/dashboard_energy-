@@ -756,6 +756,7 @@ tr:hover td {
         <option value="osmose">💧 Station d'osmose</option>
         <option value="history">📊 Historique</option>
         <option value="history-v2">📋 Historique V2</option>
+        <option value="maintenance">🛠️ Maintenance</option>
         <option value="water-consumption">💧 Consommation d'eau</option>
         <option value="anomalies">⚠️ Anomalies</option>
     </select>
@@ -800,6 +801,10 @@ tr:hover td {
 
     <div class="menu-item" data-action="open-history-v2">
         📋 Historique V2
+    </div>
+
+    <div class="menu-item" data-action="open-maintenance">
+        🛠️ Maintenance
     </div>
 
     <div class="menu-item" data-action="open-water-consumption">
@@ -1002,6 +1007,93 @@ tr:hover td {
     </div>
 </div>
 
+<!-- ZONE MAINTENANCE -->
+
+<div id="maintenance-zone" style="display:none">
+    <div class="page-header">
+        <h1>🛠️ Maintenance</h1>
+        <p id="maintenance-info"></p>
+    </div>
+
+    <div class="section">
+        <div class="section-header">➕ Enregistrer une intervention</div>
+        <div class="section-body">
+            <div id="maintenance-message" class="field-error" role="status" aria-live="polite" hidden></div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="maintenance-utility">Utilité</label>
+                    <select id="maintenance-utility">
+                        <option value="">— Sélectionner une utilité —</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="maintenance-equipment">Équipement</label>
+                    <select id="maintenance-equipment" disabled>
+                        <option value="">— Sélectionner une utilité d’abord —</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="maintenance-task">Tâche existante</label>
+                    <select id="maintenance-task" disabled>
+                        <option value="">— Sélectionner un équipement d’abord —</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>&nbsp;</label>
+                    <button class="btn btn-secondary" id="maintenance-show-new-task" type="button" disabled>➕ Ajouter une tâche</button>
+                </div>
+            </div>
+
+            <div id="maintenance-new-task-row" class="form-grid hidden" style="margin-top:18px">
+                <div class="form-group">
+                    <label for="maintenance-new-task">Nouvelle tâche</label>
+                    <input id="maintenance-new-task" type="text" maxlength="160" placeholder="Ex. Vérifier le niveau d'huile">
+                </div>
+                <div class="form-group">
+                    <label>&nbsp;</label>
+                    <button class="btn btn-primary" id="maintenance-add-task" type="button">Ajouter la tâche</button>
+                </div>
+            </div>
+
+            <div class="form-grid" style="margin-top:18px">
+                <div class="form-group" id="maintenance-hours-group">
+                    <label for="maintenance-hours">Compteur d'heures de fonctionnement (h)</label>
+                    <input id="maintenance-hours" type="number" min="0" step="0.1" disabled placeholder="Non disponible pour cet équipement">
+                </div>
+                <div class="form-group">
+                    <label>&nbsp;</label>
+                    <button class="btn btn-success" id="maintenance-save" type="button" disabled>Enregistrer l'intervention</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-header">
+        <h2>Interventions récentes</h2>
+        <p>La date et le poste sont enregistrés automatiquement.</p>
+    </div>
+    <div class="card" style="overflow:hidden">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Poste</th>
+                        <th>Utilité</th>
+                        <th>Équipement</th>
+                        <th>Tâche</th>
+                        <th>Compteur d'heures</th>
+                        <th>Technicien</th>
+                    </tr>
+                </thead>
+                <tbody id="maintenance-log-body">
+                    <tr><td colspan="7">Chargement...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 <!-- ZONE CONSOMMATION D'EAU -->
 
 <div id="water-consumption-zone" style="display:none">
@@ -1138,6 +1230,7 @@ tr:hover td {
 <script src="js/checklists.js"></script>
 <script src="js/history.js"></script>
 <script src="js/history-v2.js"></script>
+<script src="js/maintenance.js"></script>
 <script src="js/water-consumption.js"></script>
 <script src="js/pages/dashboard.js"></script>
 

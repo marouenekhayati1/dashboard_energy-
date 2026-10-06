@@ -55,6 +55,10 @@ document.addEventListener("DOMContentLoaded", () => {
         element.addEventListener("click", openHistoryV2);
       }
 
+      if (action === "open-maintenance") {
+        element.addEventListener("click", openMaintenance);
+      }
+
       if (action === "open-water-consumption") {
         element.addEventListener("click", openWaterConsumption);
       }
@@ -131,6 +135,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (dest === "home") showDashboard();
     else if (dest === "history") openHistory();
     else if (dest === "history-v2") openHistoryV2();
+    else if (dest === "maintenance") openMaintenance();
     else if (dest === "water-consumption") openWaterConsumption();
     else if (dest === "anomalies") openAnomalies();
     else openChecklist(dest);
@@ -149,6 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const checklistZone = document.getElementById("checklist-zone");
     const historyZone = document.getElementById("history-zone");
     const historyV2Zone = document.getElementById("history-v2-zone");
+    const maintenanceZone = document.getElementById("maintenance-zone");
     const waterConsumptionZone = document.getElementById("water-consumption-zone");
     const anomaliesZone = document.getElementById("anomalies-zone");
 
@@ -156,6 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (checklistZone) checklistZone.style.display = "none";
     if (historyZone) historyZone.style.display = "none";
     if (historyV2Zone) historyV2Zone.style.display = "none";
+    if (maintenanceZone) maintenanceZone.style.display = "none";
     if (waterConsumptionZone) waterConsumptionZone.style.display = "none";
     if (anomaliesZone) anomaliesZone.style.display = "none";
     return true;
@@ -191,6 +198,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (typeof loadHistoryV2 === "function") {
       loadHistoryV2();
+    }
+    window.scrollTo(0, 0);
+  }
+
+  function openMaintenance() {
+    if (!hideAllZones()) return;
+    rememberDashboardView("maintenance");
+    const zone = document.getElementById("maintenance-zone");
+    if (zone) zone.style.display = "block";
+
+    document.querySelectorAll(".menu-item").forEach((item) => item.classList.remove("active"));
+    const menuItem = document.querySelector("[data-action='open-maintenance']");
+    if (menuItem) menuItem.classList.add("active");
+
+    if (typeof window.loadMaintenance === "function") {
+      window.loadMaintenance();
     }
     window.scrollTo(0, 0);
   }
@@ -427,6 +450,12 @@ document.addEventListener("DOMContentLoaded", () => {
             <button class="btn btn-success dashboard-card-edit" type="button" hidden>Modifier</button>
         </div>`;
     }
+        grid.innerHTML += `
+          <div class="dashboard-card" onclick="openMaintenance()">
+            <div class="dashboard-icon">🛠️</div>
+            <h3>Maintenance</h3>
+            <p>Suivi des tâches et interventions.</p>
+          </div>`;
     grid.addEventListener("click", (event) => {
       const button = event.target.closest(".dashboard-card-edit");
       if (!button || button.hidden) return;
@@ -459,6 +488,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.mobileGo = mobileGo;
   window.openHistory = openHistory;
+  window.openMaintenance = openMaintenance;
   window.openAnomalies = openAnomalies;
   window.saveAnomalie = saveAnomalie;
   window.loadAnomalies = loadAnomalies;
@@ -469,6 +499,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const savedView = sessionStorage.getItem("dashboard-view");
   if (savedView === "history") openHistory();
   else if (savedView === "history-v2") openHistoryV2();
+  else if (savedView === "maintenance") openMaintenance();
   else if (savedView === "water-consumption") openWaterConsumption();
   else if (savedView === "anomalies") openAnomalies();
   else showDashboard();
