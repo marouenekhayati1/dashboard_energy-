@@ -552,10 +552,16 @@ async function validateCounterFields(id) {
             try {
                 previousValue = await getPreviousCounterValue(id, field.id, activeChecklist?.recordId || null);
             } catch (requestError) {
-                return `Impossible de vérifier le compteur ${field.label} : ${requestError.message}`;
+                return {
+                    message: `Impossible de vérifier le compteur ${field.label} : ${requestError.message}`,
+                    blocking: true
+                };
             }
             if (previousValue !== null && currentValue < previousValue) {
-                return `Le compteur ${field.label} ne peut pas être inférieur à l'ancien compteur. L'ancien compteur est : ${previousValue}.`;
+                return {
+                    message: `Le compteur ${field.label} ne peut pas être inférieur à l'ancien compteur. L'ancien compteur est : ${previousValue}.`,
+                    blocking: false
+                };
             }
         }
     }
@@ -585,10 +591,10 @@ async function saveChecklist(id) {
         return;
     }
 
-    const counterError = await validateCounterFields(id);
-    if (counterError) {
-        alert(counterError);
-        return;
+    const counterWarning = await validateCounterFields(id);
+    if (counterWarning) {
+        alert(counterWarning.message);
+        if (counterWarning.blocking) return;
     }
 
     const values = { ...activeChecklist.data };
