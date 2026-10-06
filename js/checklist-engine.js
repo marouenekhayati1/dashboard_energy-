@@ -4,6 +4,7 @@
 
 const CHECKLISTS = {}; // registre rempli par js/checklists.js
 let activeChecklist = null;
+let checklistSaveInProgress = false;
 
 function registerChecklist(id, config) {
     CHECKLISTS[id] = config;
@@ -128,7 +129,7 @@ async function openChecklist(id, record = null) {
     html += `
     <div class="actions">
         <button class="btn btn-secondary" onclick="cancelChecklist()">Annuler</button>
-        <button class="btn btn-success" onclick="saveChecklist('${id}')">💾 ${record ? "Enregistrer les modifications" : "Enregistrer"}</button>
+        <button class="btn btn-success" id="checklist-save-button" onclick="saveChecklist('${id}')">💾 ${record ? "Enregistrer les modifications" : "Enregistrer"}</button>
     </div>`;
 
     zone.innerHTML = html;
@@ -548,8 +549,17 @@ async function validateCounterFields(id) {
 
 async function saveChecklist(id) {
     const cfg = CHECKLISTS[id];
-    if (!activeChecklist || activeChecklist.id !== id) return;
+    if (!activeChecklist || activeChecklist.id !== id || checklistSaveInProgress) return;
 
+    checklistSaveInProgress = true;
+    const saveButton = document.getElementById("checklist-save-button");
+    const saveButtonLabel = saveButton?.textContent;
+    if (saveButton) {
+        saveButton.disabled = true;
+        saveButton.textContent = "Enregistrement...";
+    }
+
+    try {
     const missing = checklistMissingFields();
     if (missing.length) {
         canLeaveChecklist();
@@ -651,4 +661,11 @@ async function saveChecklist(id) {
     alert(activeChecklist.recordId ? "✅ Modifications enregistrées avec succès !" : "✅ Check-list enregistrée avec succès !");
     activeChecklist = null;
     showDashboard();
+    } finally {
+        checklistSaveInProgress = false;
+        if (saveButton && activeChecklist?.id === id) {
+            saveButton.disabled = false;
+            saveButton.textContent = saveButtonLabel;
+        }
+    }
 }
