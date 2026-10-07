@@ -896,3 +896,37 @@ tr:hover td {
     }
     .main { margin-left:0 !important; margin-top:70px !important; }
 }
+
+/* Header utilisateur compact */
+.user-info {
+    gap: 8px;
+    white-space: nowrap;
+    flex-wrap: nowrap !important;
+}
+
+.user-info > * {
+    max-width: none !important;
+    flex-shrink: 0;
+}
+
+.user-info .btn:not(.theme-btn) {
+    padding: 6px 9px !important;
+    font-size: 12px;
+}
+
+.badge {
+    padding: 6px 10px;
+}
+
+@media (max-width: 600px) {
+    .user-info {
+        width: auto;
+        gap: 6px;
+        flex-wrap: nowrap !important;
+    }
+
+    .user-info .btn:not(.theme-btn) {
+        padding: 6px 8px !important;
+        font-size: 11px;
+    }
+}
