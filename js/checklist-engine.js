@@ -561,6 +561,18 @@ function attachChecklistValidation() {
                     }
                 });
                 input.addEventListener("change", () => {
+                    if (activeChecklist) {
+                        if (field.type === "radio") {
+                            const checked = document.querySelector('input[name="' + field.id + '"]:checked');
+                            activeChecklist.data[field.id] = checked ? checked.value : "";
+                        } else if (field.type === "checkbox-group") {
+                            activeChecklist.data[field.id] = Array.from(document.querySelectorAll('input[name="' + field.id + '"]:checked')).map((item) => item.value);
+                        } else if (field.type === "checkbox") {
+                            activeChecklist.data[field.id] = input.checked ? field.label2 : "";
+                        } else {
+                            activeChecklist.data[field.id] = input.value;
+                        }
+                    }
                     clearError();
                     scheduleDraftSave();
                     if (field.id.startsWith("cpt_")) {
