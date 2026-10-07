@@ -229,7 +229,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (menuItem) menuItem.classList.add("active");
 
     if (typeof loadWaterConsumption === "function") {
-      loadWaterConsumption();
+      loadWaterConsumption(true);
     }
     window.scrollTo(0, 0);
   }

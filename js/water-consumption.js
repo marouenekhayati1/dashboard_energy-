@@ -196,10 +196,15 @@ function renderWaterConsumption() {
     }).join("");
 }
 
-async function loadWaterConsumption() {
+async function loadWaterConsumption(forceRefresh = false) {
     const body = document.getElementById("water-consumption-body");
     const info = document.getElementById("water-consumption-info");
     if (!body || !window.db) return;
+
+    if (forceRefresh) {
+        waterConsumptionRows = null;
+        waterConsumptionRequest = null;
+    }
 
     if (waterConsumptionRows) {
         renderWaterConsumption();
