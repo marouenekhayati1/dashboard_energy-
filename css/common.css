@@ -719,6 +719,19 @@ tr:hover td {
     color: white;
 }
 
+/* MODE JOUR / NUIT */
+.theme-btn {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px;
+    padding: 0 !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50% !important;
+    flex-shrink: 0;
+}
+
 /* BUTTON */
 
 .actions {
