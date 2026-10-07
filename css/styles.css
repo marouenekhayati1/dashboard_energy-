@@ -177,3 +177,9 @@ select:focus {
         min-height: 46px;
     }
 }
+
+
+/* Taille générale +10% sur ordinateur */
+@media (min-width: 601px) {
+    body { zoom: 1.1; }
+}
