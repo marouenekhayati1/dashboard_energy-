@@ -432,7 +432,15 @@ document.addEventListener("DOMContentLoaded", () => {
       card.classList.toggle("is-locked", isLocked);
       if (status) {
         status.classList.toggle("is-locked", isLocked);
-        status.textContent = isLocked ? "🔒 Verrouillée pour ce poste" : "À remplir";
+        const hasDraft = !isLocked && typeof window.hasChecklistDraft === "function" && window.hasChecklistDraft(card.dataset.checklistId, poste);
+        status.classList.toggle("is-draft", hasDraft);
+        if (isLocked) {
+          status.textContent = "🔒 Verrouillée pour ce poste";
+        } else if (hasDraft) {
+          status.textContent = "📝 Brouillon en cours";
+        } else {
+          status.textContent = "À remplir";
+        }
       }
       if (editButton) {
         const canEdit = record && (session?.role === "admin" || session?.id === record.technician_id);

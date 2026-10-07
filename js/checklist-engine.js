@@ -57,6 +57,9 @@ function showDashboard() {
 }
 
 function cancelChecklist() {
+    if (activeChecklist) {
+        saveChecklistDraft();
+    }
     activeChecklist = null;
     showDashboard();
 }
@@ -64,6 +67,186 @@ function cancelChecklist() {
 function rememberDashboardView(view) {
     sessionStorage.setItem("dashboard-view", view);
 }
+
+
+/* ---------- GESTION DES BROUILLONS (LOCALSTORAGE) ---------- */
+
+const DRAFT_PREFIX = "indus_draft_";
+let draftSaveTimer = null;
+
+function getDraftStorageKey(utilityId, poste, recordId = null) {
+    const session = typeof getSession === "function" ? getSession() : null;
+    const technicianId = session?.id ? String(session.id) : "guest";
+    if (recordId) {
+        return `${DRAFT_PREFIX}edit_${technicianId}_${recordId}`;
+    }
+    return `${DRAFT_PREFIX}${technicianId}_${utilityId}_${poste}`;
+}
+
+function extractChecklistFormData() {
+    if (!activeChecklist || !activeChecklist.id) return null;
+    const cfg = CHECKLISTS[activeChecklist.id];
+    if (!cfg) return null;
+
+    const values = { ...(activeChecklist.data || {}) };
+
+    for (const section of cfg.sections) {
+        if (section.night && activeChecklist.poste !== "nuit") continue;
+        for (const f of section.fields) {
+            if (f.type === "checkbox-group") {
+                values[f.id] = Array.from(document.querySelectorAll('input[name="' + f.id + '"]:checked'))
+                    .map((input) => input.value);
+                continue;
+            }
+
+            const el = document.getElementById(f.id);
+            if (!el) {
+                if (activeChecklist.data && activeChecklist.data[f.id] !== undefined) {
+                    values[f.id] = activeChecklist.data[f.id];
+                }
+                continue;
+            }
+
+            if (f.type === "radio") {
+                const checked = document.querySelector('input[name="' + f.id + '"]:checked');
+                if (checked) {
+                    values[f.id] = checked.value;
+                } else if (activeChecklist.recordId && activeChecklist.data && activeChecklist.data[f.id] !== undefined) {
+                    values[f.id] = activeChecklist.data[f.id];
+                } else {
+                    values[f.id] = "";
+                }
+            } else if (f.type === "checkbox") {
+                values[f.id] = el.checked ? f.label2 : "";
+            } else {
+                values[f.id] = el.value;
+            }
+        }
+    }
+
+    return values;
+}
+
+function updateDraftIndicator(statusText) {
+    const indicator = document.getElementById("draft-status-indicator");
+    if (indicator) {
+        indicator.textContent = statusText;
+    }
+}
+
+function saveChecklistDraft() {
+    if (!activeChecklist || !activeChecklist.id) return;
+    const values = extractChecklistFormData();
+    if (!values) return;
+
+    const hasAnyContent = Object.entries(values).some(([key, val]) => {
+        if (key === "_modifications") return false;
+        if (Array.isArray(val)) return val.length > 0;
+        return val !== "" && val !== null && val !== undefined;
+    });
+
+    const key = getDraftStorageKey(activeChecklist.id, activeChecklist.poste, activeChecklist.recordId);
+
+    if (!hasAnyContent) {
+        try { localStorage.removeItem(key); } catch {}
+        updateDraftIndicator("");
+        return;
+    }
+
+    const session = typeof getSession === "function" ? getSession() : null;
+    const technicianId = session?.id ? String(session.id) : "guest";
+
+    const payload = {
+        technicianId,
+        utilityId: activeChecklist.id,
+        poste: activeChecklist.poste,
+        openedAt: activeChecklist.openedAt ? activeChecklist.openedAt.toISOString() : new Date().toISOString(),
+        recordId: activeChecklist.recordId,
+        savedAt: new Date().toISOString(),
+        data: values
+    };
+
+    try {
+        localStorage.setItem(key, JSON.stringify(payload));
+        const timeStr = new Date().toLocaleTimeString("fr-FR");
+        updateDraftIndicator("💾 Brouillon auto-enregistré (" + timeStr + ")");
+    } catch (e) {
+        console.warn("Erreur sauvegarde brouillon :", e);
+    }
+}
+
+function scheduleDraftSave() {
+    if (draftSaveTimer) clearTimeout(draftSaveTimer);
+    draftSaveTimer = setTimeout(() => {
+        saveChecklistDraft();
+    }, 350);
+}
+
+function loadChecklistDraft(utilityId, poste, recordId = null, promptIfExpired = true) {
+    const key = getDraftStorageKey(utilityId, poste, recordId);
+    try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || !parsed.data || typeof parsed.data !== "object") return null;
+
+        if (parsed.savedAt && promptIfExpired) {
+            const ageMs = Date.now() - new Date(parsed.savedAt).getTime();
+            if (ageMs > 24 * 3600 * 1000) {
+                const savedDateStr = new Date(parsed.savedAt).toLocaleString("fr-FR");
+                const shouldKeep = window.confirm(
+                    `Un ancien brouillon de plus de 24 heures existe pour cette check-list (sauvegardé le ${savedDateStr}).\n\n` +
+                    `Voulez-vous restaurer ces données ?\n` +
+                    `• OK : Restaurer ce brouillon\n` +
+                    `• Annuler : Supprimer ce brouillon et repartir d'un formulaire vierge`
+                );
+                if (!shouldKeep) {
+                    clearChecklistDraft(utilityId, poste, recordId);
+                    return null;
+                }
+            }
+        }
+        return parsed;
+    } catch {
+        return null;
+    }
+}
+
+function clearChecklistDraft(utilityId, poste, recordId = null) {
+    const key = getDraftStorageKey(utilityId, poste, recordId);
+    try {
+        localStorage.removeItem(key);
+    } catch {}
+}
+
+function hasChecklistDraft(utilityId, poste, recordId = null) {
+    const key = getDraftStorageKey(utilityId, poste, recordId);
+    try {
+        const raw = localStorage.getItem(key);
+        return Boolean(raw);
+    } catch {
+        return false;
+    }
+}
+
+function discardCurrentDraft() {
+    if (!activeChecklist) return;
+    const ok = window.confirm("Voulez-vous vraiment effacer ce brouillon et réinitialiser tous les champs ?");
+    if (!ok) return;
+
+    clearChecklistDraft(activeChecklist.id, activeChecklist.poste, activeChecklist.recordId);
+    if (activeChecklist.recordId) {
+        editChecklistRecord(activeChecklist.recordId);
+    } else {
+        openChecklist(activeChecklist.id);
+    }
+}
+
+window.loadChecklistDraft = loadChecklistDraft;
+window.hasChecklistDraft = hasChecklistDraft;
+window.clearChecklistDraft = clearChecklistDraft;
+window.saveChecklistDraft = saveChecklistDraft;
+window.discardCurrentDraft = discardCurrentDraft;
 
 
 /* ---------- OUVRIR UNE CHECK-LIST ----------
@@ -76,9 +259,17 @@ async function openChecklist(id, record = null) {
     if (!cfg) { alert("Check-list introuvable : " + id); return; }
     if (!canLeaveChecklist()) return;
 
-    const poste = record ? record.poste : currentPoste();
+    const currentShift = record ? record.poste : currentPoste();
+
+    // Vérifier si un brouillon existe
+    let draft = loadChecklistDraft(id, currentShift, record ? record.id : null, true);
+
+    // Ajustement 2 : Conserver le poste et openedAt du brouillon
+    const poste = (draft && draft.poste) ? draft.poste : currentShift;
+    const openedAt = (draft && draft.openedAt) ? new Date(draft.openedAt) : new Date();
+
     if (!record) {
-        const interval = getPosteInterval(poste);
+        const interval = getPosteInterval(poste, openedAt);
         const { data, error } = await db.from("measurements")
             .select("id")
             .eq("utility_name", id)
@@ -114,6 +305,17 @@ async function openChecklist(id, record = null) {
     // Construire TOUT le contenu, y compris le titre (écrase l'ancien)
     let html = '<div class="page-header"><h1>' + cfg.icon + " " + cfg.title + '</h1></div>';
 
+    if (draft && draft.data) {
+        const savedTime = new Date(draft.savedAt).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+        html += `
+        <div id="checklist-draft-banner" class="card" style="background: rgba(140, 92, 255, 0.12); border: 1px solid var(--primary); border-radius: 12px; padding: 12px 18px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+            <div style="font-size: 13px; color: var(--foreground);">
+                📝 <strong>Brouillon restauré :</strong> Une saisie non enregistrée pour le poste <strong>${poste}</strong> a été récupérée (sauvegardée à ${savedTime}).
+            </div>
+            <button type="button" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="discardCurrentDraft()">🗑️ Effacer le brouillon</button>
+        </div>`;
+    }
+
     for (const section of cfg.sections) {
         const hidden = section.night && poste !== "nuit" ? " hidden" : "";
         html += '<div class="section' + (section.night ? " night-only" : "") + hidden + '">';
@@ -127,18 +329,25 @@ async function openChecklist(id, record = null) {
     }
 
     html += `
-    <div class="actions">
+    <div class="actions" style="display:flex; justify-content:flex-end; align-items:center; gap:12px; margin:25px 0;">
+        <span id="draft-status-indicator" style="font-size:12px; color:var(--muted); margin-right:auto;"></span>
         <button class="btn btn-secondary" onclick="cancelChecklist()">Annuler</button>
         <button class="btn btn-success" id="checklist-save-button" onclick="saveChecklist('${id}')">💾 ${record ? "Enregistrer les modifications" : "Enregistrer"}</button>
     </div>`;
 
     zone.innerHTML = html;
+
+    let initialData = record && record.data && typeof record.data === "object" ? { ...record.data } : {};
+    if (draft && draft.data) {
+        initialData = { ...initialData, ...draft.data };
+    }
+
     activeChecklist = {
         id,
         recordId: record ? record.id : null,
         poste,
-        openedAt: new Date(),
-        data: record && record.data && typeof record.data === "object" ? record.data : {}
+        openedAt,
+        data: initialData
     };
     rememberDashboardView("dashboard");
 
@@ -346,12 +555,14 @@ function attachChecklistValidation() {
                 };
                 input.addEventListener("input", () => {
                     clearError();
+                    scheduleDraftSave();
                     if (field.id.startsWith("cpt_")) {
                         validateCounterInput(field.id);
                     }
                 });
                 input.addEventListener("change", () => {
                     clearError();
+                    scheduleDraftSave();
                     if (field.id.startsWith("cpt_")) {
                         validateCounterInput(field.id);
                     }
@@ -362,6 +573,7 @@ function attachChecklistValidation() {
         if (section.activeField) {
             document.querySelectorAll('input[name="' + section.activeField + '"]').forEach((input) => {
                 input.addEventListener("change", () => {
+                    scheduleDraftSave();
                     const state = document.querySelector('input[name="' + section.activeField + '"]:checked')?.value;
                     if (state !== "Inactive") return;
                     for (const field of section.fields) {
@@ -380,13 +592,17 @@ function attachChecklistValidation() {
 }
 
 function canLeaveChecklist() {
+    if (!activeChecklist) return true;
     const missing = checklistMissingFields();
     if (!missing.length) return true;
 
     showChecklistErrors(missing);
+    saveChecklistDraft();
 
     const shouldDiscard = window.confirm(
-        "Les données saisies seront abandonnées.\n\nOK pour continuer, Annuler pour rester sur la page."
+        "Certains champs obligatoires ne sont pas remplis.\n\n" +
+        "Vos saisies actuelles sont enregistrées en brouillon sur cet appareil.\n\n" +
+        "OK pour quitter (brouillon conservé), Annuler pour rester sur la page."
     );
 
     if (!shouldDiscard) {
@@ -425,9 +641,12 @@ async function editChecklistRecord(recordId) {
 }
 
 window.addEventListener("beforeunload", (event) => {
-    if (checklistMissingFields().length) {
-        event.preventDefault();
-        event.returnValue = "";
+    if (activeChecklist) {
+        saveChecklistDraft();
+        if (checklistMissingFields().length) {
+            event.preventDefault();
+            event.returnValue = "";
+        }
     }
 });
 
@@ -624,39 +843,9 @@ async function saveChecklist(id) {
         if (counterWarning.blocking) return;
     }
 
-    const values = { ...activeChecklist.data };
-
-    for (const section of cfg.sections) {
-        if (section.night && activeChecklist.poste !== "nuit") continue;
-        for (const f of section.fields) {
-            if (f.type === "checkbox-group") {
-                values[f.id] = Array.from(document.querySelectorAll('input[name="' + f.id + '"]:checked'))
-                    .map((input) => input.value);
-                continue;
-            }
-
-            const el = document.getElementById(f.id);
-            if (!el) {
-                if (activeChecklist.data[f.id] !== undefined) values[f.id] = activeChecklist.data[f.id];
-                continue;
-            }
-
-            if (f.type === "radio") {
-                const checked = document.querySelector('input[name="' + f.id + '"]:checked');
-                if (checked) {
-                    values[f.id] = checked.value;
-                } else if (activeChecklist.recordId && activeChecklist.data[f.id] !== undefined) {
-                    values[f.id] = activeChecklist.data[f.id];
-                } else {
-                    values[f.id] = "";
-                }
-            }
-            else if (f.type === "checkbox") {
-                values[f.id] = el.checked ? f.label2 : "";
-            }
-            else values[f.id] = el.value;
-        }
-    }
+    // Sauvegarde préventive du brouillon avant appel réseau
+    saveChecklistDraft();
+    const values = extractChecklistFormData();
 
     const session = getSession();
     let result = { error: null };
@@ -679,7 +868,7 @@ async function saveChecklist(id) {
                     // Le message initial reste affiché si la réponse n'est pas JSON.
                 }
             }
-            alert("Erreur : " + message);
+            alert("Erreur : " + message + "\n\n⚠️ Vos saisies restent en sécurité dans le brouillon local sur cet appareil.");
             return;
         }
     } else {
@@ -715,10 +904,12 @@ async function saveChecklist(id) {
     }
 
     if (result.error || (!activeChecklist.recordId && !result.data?.id)) {
-        alert("Erreur : " + (result.error?.message || "L'enregistrement n'a pas pu être confirmé dans la base de données."));
+        alert("Erreur : " + (result.error?.message || "L'enregistrement n'a pas pu être confirmé dans la base de données.") + "\n\n⚠️ Vos saisies restent en sécurité dans le brouillon local sur cet appareil.");
         return;
     }
 
+    // Suppression du brouillon uniquement après confirmation du succès Supabase
+    clearChecklistDraft(id, activeChecklist.poste, activeChecklist.recordId);
     alert(activeChecklist.recordId ? "✅ Modifications enregistrées avec succès !" : "✅ Check-list enregistrée avec succès !");
     activeChecklist = null;
     showDashboard();
