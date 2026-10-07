@@ -508,6 +508,29 @@ tr:hover td {
 
 /* MOBILE - TABLETTE */
 
+/* DESKTOP : menu horizontal en haut */
+@media(min-width: 901px) {
+    .sidebar {
+        top: 70px;
+        left: 0;
+        width: 100%;
+        height: auto;
+        padding: 8px 20px;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        z-index: 90;
+    }
+
+    .menu-title { display: none; }
+    .menu-item { white-space: nowrap; margin: 0; padding: 10px 14px; }
+    .main { margin-left: 0; margin-top: 120px; }
+}
+
 @media(max-width: 900px) {
 
     .sidebar {
