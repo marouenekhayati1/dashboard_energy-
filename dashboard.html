@@ -1228,3 +1228,25 @@ table{font-size:11px}th,td{padding:8px 10px}th{font-size:10px}.history-column-fi
 
 </body>
 </html>
+
+/* DESKTOP : navigation déroulante comme sur mobile */
+@media (min-width:901px) {
+    .sidebar {
+        display:none !important;
+    }
+
+    #mobile-nav {
+        display:block !important;
+        width:240px !important;
+        max-width:240px !important;
+        margin-left:auto;
+        margin-right:20px;
+        padding:8px 10px;
+        font-size:13px;
+    }
+
+    .main {
+        margin-left:0 !important;
+        margin-top:56px !important;
+    }
+}
