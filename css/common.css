@@ -28,3 +28,192 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--font-sans);background:var(--background);color:var(--foreground);transition:background .3s,color .3s}
+
+
+/* Auth pages */
+body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+/* ------------------------------
+   CONTAINER
+------------------------------ */
+.container {
+    width: 100%;
+    max-width: 420px;
+}
+
+/* ------------------------------
+   CARD
+------------------------------ */
+.card {
+    background: var(--card);
+
+    border: 1px solid var(--border);
+
+    border-radius: var(--radius);
+
+    padding: 30px;
+
+    box-shadow: var(--shadow);
+}
+
+/* ------------------------------
+   TITRES
+------------------------------ */
+.logo-title {
+    text-align: center;
+    font-size: 28px;
+    margin-bottom: 6px;
+}
+
+.logo-subtitle {
+    text-align: center;
+    color: var(--muted-foreground);
+    font-size: 14px;
+    margin-bottom: 24px;
+}
+
+/* ------------------------------
+   FORMULAIRES
+------------------------------ */
+label {
+    display: block;
+    margin-bottom: 6px;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--text);
+}
+
+input,
+select {
+    width: 100%;
+
+    padding: 12px;
+
+    margin-bottom: 12px;
+
+    background: var(--bg);
+    color: var(--text);
+
+    border: 1px solid var(--border);
+    border-radius: 10px;
+
+    font-size: 14px;
+}
+
+/* Correction du menu déroulant */
+select option {
+    background: var(--card);
+    color: var(--text);
+}
+
+input:focus,
+select:focus {
+    outline: none;
+    border-color: var(--ring);
+}
+
+/* ------------------------------
+   BOUTONS
+------------------------------ */
+.btn {
+    width: 100%;
+
+    margin-top: 10px;
+
+    padding: 13px;
+
+    border: none;
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    font-size: 14px;
+    font-weight: bold;
+
+    transition: 0.2s;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+}
+
+/* ------------------------------
+   LIENS
+------------------------------ */
+.auth-link {
+    display: block;
+
+    text-align: center;
+
+    margin-top: 18px;
+
+    color: var(--primary);
+
+    text-decoration: none;
+}
+
+.auth-link:hover {
+    text-decoration: underline;
+}
+
+/* ------------------------------
+   ALERTES
+------------------------------ */
+.alert {
+    padding: 12px;
+    margin-bottom: 16px;
+
+    border-radius: 10px;
+}
+
+.alert-critical {
+    background: color-mix(in srgb, var(--destructive) 15%, transparent);
+
+    border: 1px solid color-mix(in srgb, var(--destructive) 30%, transparent);
+
+    color: var(--destructive);
+}
+
+.hidden {
+    display: none;
+}
+
+/* ------------------------------
+   MOBILE
+------------------------------ */
+@media (max-width: 600px) {
+
+    body {
+        padding: 15px;
+    }
+
+    .container {
+        max-width: 100%;
+    }
+
+    .card {
+        margin-top: 20px;
+        padding: 22px;
+    }
+
+    .logo-title {
+        font-size: 24px;
+    }
+
+    input,
+    select,
+    .btn {
+        min-height: 46px;
+    }
+}
