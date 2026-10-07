@@ -897,73 +897,96 @@ tr:hover td {
     .main { margin-left:0 !important; margin-top:70px !important; }
 }
 
-/* Barre utilisateur : éléments uniformes et alignés */
+/* Barre utilisateur : UX claire et compacte */
 .user-info {
-    display: grid !important;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    display: flex !important;
     align-items: center;
+    justify-content: flex-end;
     gap: 8px;
-    width: min(100%, 560px);
+    width: auto;
+    max-width: 620px;
     min-width: 0;
     white-space: nowrap;
 }
-
 .user-info > * {
-    width: 100% !important;
-    min-width: 0 !important;
-    max-width: none !important;
-    height: 36px;
+    height: 38px;
     margin: 0 !important;
-    flex-shrink: 1;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+.user-info > #user-display {
+    min-width: 120px;
+    max-width: 210px;
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 13px;
+    font-weight: 600;
+}
+.user-info .badge {
+    min-width: 110px;
+    max-width: 150px;
+    padding: 6px 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-sizing: border-box;
-}
-
-.user-info > #user-display {
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.user-info .badge {
-    padding: 6px 8px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.user-info .theme-btn {
-    width: 36px !important;
-    min-width: 36px !important;
-    justify-self: center;
-    height: 36px !important;
-}
-
-.user-info .btn:not(.theme-btn) {
-    width: 100% !important;
-    min-width: 0 !important;
-    padding: 6px 8px !important;
+    border-radius: 999px;
     font-size: 12px;
+    font-weight: 600;
 }
-
+.user-info .theme-btn {
+    width: 38px !important;
+    min-width: 38px !important;
+    height: 38px !important;
+    padding: 0 !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50% !important;
+}
+.user-info .btn:not(.theme-btn) {
+    width: auto !important;
+    min-width: 105px !important;
+    padding: 7px 14px !important;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+@media (max-width: 1000px) {
+    .user-info > #user-display { min-width: 90px; max-width: 150px; }
+    .user-info .badge { min-width: 95px; max-width: 125px; }
+    .user-info .btn:not(.theme-btn) { min-width: 92px !important; }
+}
 @media (max-width: 600px) {
     .user-info {
         width: 100%;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        max-width: none;
+        justify-content: stretch;
         gap: 6px;
     }
-
-    .user-info > * {
-        height: 36px;
+    .user-info > #user-display {
+        flex: 1 1 0;
+        min-width: 0;
+        max-width: none;
+        padding: 0 6px;
+        font-size: 12px;
     }
-
-    .user-info .btn:not(.theme-btn) {
-        padding: 6px 5px !important;
+    .user-info .badge {
+        flex: 1 1 0;
+        min-width: 0;
+        max-width: none;
+        padding: 6px;
         font-size: 11px;
     }
-
-    .user-info .badge {
-        padding: 6px 5px;
+    .user-info .theme-btn { flex: 0 0 38px; }
+    .user-info .btn:not(.theme-btn) {
+        flex: 0 0 auto;
+        min-width: 92px !important;
+        padding: 7px 8px !important;
         font-size: 11px;
     }
 }
