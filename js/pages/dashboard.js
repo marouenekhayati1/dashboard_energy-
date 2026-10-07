@@ -16,9 +16,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   const userName = session.first_name + " " + session.last_name;
-  const userInfo = document.querySelector(".user-info span");
+  const userInfo = document.getElementById("user-display");
   if (userInfo) {
-    userInfo.textContent = "👤 " + userName;
+    userInfo.textContent = "👤 " + userName + " | Poste : —";
   }
 
   const technicienField = document.getElementById("technicien");
@@ -118,9 +118,9 @@ document.addEventListener("DOMContentLoaded", () => {
       posteField.value = getPosteLabel(poste);
     }
 
-    const badge = document.getElementById("badge-poste");
-    if (badge) {
-      badge.textContent = "Poste : " + getPosteLabel(poste);
+    const userInfo = document.getElementById("user-display");
+    if (userInfo) {
+      userInfo.textContent = "👤 " + userName + " | Poste : " + getPosteLabel(poste);
     }
 
     document.querySelectorAll(".night-only").forEach((el) => {
