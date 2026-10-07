@@ -44,7 +44,7 @@ registerChecklist("water", {
                 { id: "collect_filtree", type: "number", label: "Pression Collecteur Eau Filtrée (bar)", min: 4, max: 5 },
                 { id: "collect_adoucie", type: "number", label: "Pression Collecteur Eau Adoucie (bar)", min: 4, max: 5 },
                 { id: "filtre_inox", type: "number", label: "Pression Filtre Inox (bar)", min: 4, max: 5 },
-                { id: "filtre_pvc2", type: "number", label: "Pression Filtre PVC 2 (bar)", min: 4, max: 5 }
+                { id: "filtre_pvc2", type: "number", label: "Pression collecteur eau de process (bar)", min: 4, max: 5 }
             ]
         },
 
