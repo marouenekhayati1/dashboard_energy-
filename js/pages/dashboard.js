@@ -7,8 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  window.db = db;
+  const db = window.db;
 
   const session = getSession();
   if (!session) {
