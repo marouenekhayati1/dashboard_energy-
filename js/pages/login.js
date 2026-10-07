@@ -1,6 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const theme = localStorage.getItem("theme") || "dark";
-  document.documentElement.setAttribute("data-theme", theme);
+  initTheme();
 
   const loginForm = document.getElementById("login-form");
   const select = document.getElementById("login-tech");
