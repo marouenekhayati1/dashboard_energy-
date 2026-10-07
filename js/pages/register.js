@@ -1,6 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const theme = localStorage.getItem("theme") || "dark";
-  document.documentElement.setAttribute("data-theme", theme);
+  initTheme();
 
   const form = document.getElementById("register-form");
   const errorBox = document.getElementById("reg-error");
