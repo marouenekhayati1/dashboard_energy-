@@ -97,7 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function getPosteLabel(poste) {
     if (poste === "matin") return "Matin";
-    if (poste === "apres-midi") return "Jour";
+    if (poste === "apres-midi") return "Après-midi";
     if (poste === "nuit") return "Nuit";
     return "—";
   }
