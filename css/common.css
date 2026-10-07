@@ -897,40 +897,73 @@ tr:hover td {
     .main { margin-left:0 !important; margin-top:70px !important; }
 }
 
-/* Header utilisateur compact */
+/* Barre utilisateur : éléments uniformes et alignés */
 .user-info {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: center;
     gap: 8px;
+    width: min(100%, 560px);
+    min-width: 0;
     white-space: nowrap;
-    flex-wrap: nowrap !important;
 }
 
 .user-info > * {
+    width: 100% !important;
+    min-width: 0 !important;
     max-width: none !important;
-    flex-shrink: 0;
+    height: 36px;
+    margin: 0 !important;
+    flex-shrink: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.user-info > #user-display {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-info .badge {
+    padding: 6px 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-info .theme-btn {
+    width: 36px !important;
+    min-width: 36px !important;
+    justify-self: center;
+    height: 36px !important;
 }
 
 .user-info .btn:not(.theme-btn) {
-    width: auto !important;
+    width: 100% !important;
     min-width: 0 !important;
-    padding: 6px 9px !important;
+    padding: 6px 8px !important;
     font-size: 12px;
-}
-
-.badge {
-    padding: 6px 10px;
 }
 
 @media (max-width: 600px) {
     .user-info {
-        width: auto;
+        width: 100%;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 6px;
-        flex-wrap: nowrap !important;
+    }
+
+    .user-info > * {
+        height: 36px;
     }
 
     .user-info .btn:not(.theme-btn) {
-        width: auto !important;
-        min-width: 0 !important;
-        padding: 6px 8px !important;
+        padding: 6px 5px !important;
+        font-size: 11px;
+    }
+
+    .user-info .badge {
+        padding: 6px 5px;
         font-size: 11px;
     }
 }
