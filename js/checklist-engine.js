@@ -137,6 +137,7 @@ async function openChecklist(id, record = null) {
         id,
         recordId: record ? record.id : null,
         poste,
+        openedAt: new Date(),
         data: record && record.data && typeof record.data === "object" ? record.data : {}
     };
     rememberDashboardView("dashboard");
@@ -181,22 +182,39 @@ async function openChecklist(id, record = null) {
     return true;
 }
 
+const POSTE_INTERVALS = {
+    matin: { startHour: 6, endHour: 14, nextDay: false },
+    "apres-midi": { startHour: 14, endHour: 20, nextDay: false },
+    nuit: { startHour: 20, endHour: 6, nextDay: true }
+};
+
 function getPosteInterval(poste, anchorDate = new Date()) {
     const now = new Date(anchorDate);
-    const start = new Date(now);
-    const startHour = poste === "matin" ? 6 : poste === "apres-midi" ? 14 : 20;
-    start.setHours(startHour, 0, 0, 0);
+    const resolvedPoste = (poste && POSTE_INTERVALS[poste])
+        ? poste
+        : getPosteFromDate(now);
+    const config = POSTE_INTERVALS[resolvedPoste];
 
-    if (poste === "nuit" && now.getHours() < 6) {
-        start.setDate(start.getDate() - 1);
-    } else if (poste !== "nuit" && now.getHours() < startHour) {
+    const start = new Date(now);
+    if (now.getHours() < config.startHour) {
         start.setDate(start.getDate() - 1);
     }
+    start.setHours(config.startHour, 0, 0, 0);
 
     const end = new Date(start);
-    end.setHours(end.getHours() + 8);
+    if (config.nextDay) {
+        end.setDate(end.getDate() + 1);
+    }
+    end.setHours(config.endHour, 0, 0, 0);
+
     return { start, end };
 }
+
+window.POSTE_INTERVALS = POSTE_INTERVALS;
+window.getPosteInterval = getPosteInterval;
+window.getPosteFromDate = getPosteFromDate;
+window.currentPoste = currentPoste;
+
 
 function getChecklistRadioValue(fieldId) {
     const selected = document.querySelector('input[name="' + fieldId + '"]:checked');
@@ -665,7 +683,7 @@ async function saveChecklist(id) {
             return;
         }
     } else {
-        const interval = getPosteInterval(activeChecklist.poste);
+        const interval = getPosteInterval(activeChecklist.poste, activeChecklist.openedAt || new Date());
         const { data: existing, error: checkError } = await db.from("measurements")
             .select("id")
             .eq("utility_name", id)
