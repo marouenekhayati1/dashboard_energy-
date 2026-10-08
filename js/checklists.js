@@ -63,7 +63,8 @@ registerChecklist("water", {
             title: "🧪 Adoucisseur",
             fields: [
                 { id: "adoucisseur_actif", type: "select", label: "Adoucisseur actif", options: ["Adoucisseur 1", "Adoucisseur 2"] },
-                { id: "adoucisseur_regen", type: "number", label: "Compteur de régénération" }
+                { id: "adoucisseur_regen", type: "number", label: "Compteur de régénération" },
+                { id: "adoucisseur_sel", type: "number", label: "Quantité de sel versée (kg)", min: 0 }
             ]
         },
 
