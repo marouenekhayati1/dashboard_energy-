@@ -1,100 +1,17 @@
-const HISTO_V2_LABELS = {
-    water: "💧 Traitement d'eau",
-    surchauffee: "🔥 Eau surchauffée",
-    vapeur: "♨️ Chaudière vapeur",
-    vide: "🔧 Pompe à vide",
-    compresseurs: "💨 Compresseurs",
-    glacee: "❄️ Eau glacée - Trane",
-    chiller: "❄️ Eau glacée - Chiller",
-    york: "❄️ Eau glacée - York",
-    thermo: "🌡️ Thermoventilation",
-    groupes: "⚡ Groupes électrogènes",
-    osmose: "💧 Station d'osmose"
-};
-
 let historyV2Records = [];
 let historyV2VisibleRecords = [];
 let historyV2LastTrigger = null;
 let historyV2SortKey = "recorded_at";
 let historyV2SortDirection = "desc";
 
-function escapeHistoryV2(value) {
-    return String(value).replace(/[&<>"']/g, (character) => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-    })[character]);
-}
-
-function historyV2FieldLabel(id) {
-    for (const checklist of Object.values(CHECKLISTS)) {
-        for (const section of checklist.sections) {
-            const field = section.fields.find((candidate) => candidate.id === id);
-            if (field) return field.label;
-        }
-    }
-    return id;
-}
-
-function flattenHistoryV2Rows(data) {
-    const rows = [];
-
-    for (const record of data || []) {
-        if (record.utility_name !== "groupes" || !record.data || typeof record.data !== "object") {
-            rows.push({ ...record, __historyGroupLabel: null });
-            continue;
-        }
-
-        const groupRows = { 1: {}, 2: {} };
-        for (const [key, value] of Object.entries(record.data)) {
-            if (key === "_modifications") continue;
-            const match = /^g([12])_(.+)$/.exec(key);
-            if (match) {
-                groupRows[match[1]][match[2]] = value;
-            }
-        }
-
-        const groupIds = Object.keys(groupRows).filter((groupId) => Object.keys(groupRows[groupId]).length > 0);
-        if (!groupIds.length) {
-            rows.push({ ...record, __historyGroupLabel: "⚡ Groupes électrogènes" });
-            continue;
-        }
-
-        for (const groupId of groupIds) {
-            rows.push({
-                ...record,
-                data: {
-                    ...groupRows[groupId],
-                    ...(record.data._modifications ? { _modifications: record.data._modifications } : {})
-                },
-                __historyGroupLabel: `⚡ Groupe ${groupId}`
-            });
-        }
-    }
-
-    return rows;
-}
-
-function historyV2Technician(record) {
-    return record.technicians
-        ? `${record.technicians.first_name || ""} ${record.technicians.last_name || ""}`.trim()
-        : "";
-}
-
 function historyV2Value(record, key) {
     if (key === "recorded_at") return record.recorded_at || "";
-    if (key === "utility_name") return record.__historyGroupLabel || HISTO_V2_LABELS[record.utility_name] || record.utility_name || "";
+    if (key === "utility_name") return record.__historyGroupLabel || HISTO_LABELS[record.utility_name] || record.utility_name || "";
     if (key === "__poste") return getPosteFromDate(new Date(record.recorded_at)) || "";
-    if (key === "__technician") return historyV2Technician(record);
+    if (key === "__technician") return historyTechnician(record);
     if (key === "__audit") return (record.data?._modifications || []).map((item) => `${item.first_name || ""} ${item.last_name || ""} ${item.edited_at || ""}`).join(" ");
     if (key === "__detailcount") return Object.keys(record.data || {}).filter((field) => field !== "_modifications").length;
     return "";
-}
-
-function historyV2DateKey(date) {
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
 function renderHistoryV2Header() {
@@ -124,7 +41,7 @@ function renderHistoryV2Table() {
 
     historyV2VisibleRecords = historyV2Records.filter((record) => {
         const timestamp = new Date(record.recorded_at);
-        const dateKey = Number.isNaN(timestamp.getTime()) ? "" : historyV2DateKey(timestamp);
+        const dateKey = Number.isNaN(timestamp.getTime()) ? "" : historyDateKey(timestamp);
         if (dateFrom && dateKey < dateFrom) return false;
         if (dateTo && dateKey > dateTo) return false;
         return true;
@@ -148,7 +65,7 @@ function renderHistoryV2Table() {
     }
 
     body.innerHTML = historyV2VisibleRecords.map((record, index) => {
-        const technician = historyV2Technician(record) || "—";
+        const technician = historyTechnician(record) || "—";
         const timestamp = new Date(record.recorded_at);
         const date = Number.isNaN(timestamp.getTime()) ? "Date inconnue" : timestamp.toLocaleString("fr-FR");
         const poste = getPosteFromDate(timestamp) || "—";
@@ -158,10 +75,10 @@ function renderHistoryV2Table() {
         const canEdit = session?.role === "admin" || session?.id === record.technician_id;
         return `<tr>
             <td>${renderModificationAudit(record.data)}</td>
-            <td style="white-space:nowrap">${escapeHistoryV2(date)}</td>
-            <td style="white-space:nowrap">${escapeHistoryV2(label)}</td>
-            <td>${escapeHistoryV2(poste)}</td>
-            <td style="white-space:nowrap">${escapeHistoryV2(technician)}</td>
+            <td style="white-space:nowrap">${escapeHistoryHtml(date)}</td>
+            <td style="white-space:nowrap">${escapeHistoryHtml(label)}</td>
+            <td>${escapeHistoryHtml(poste)}</td>
+            <td style="white-space:nowrap">${escapeHistoryHtml(technician)}</td>
             <td><button class="btn btn-secondary" type="button" data-history-v2-detail="${index}" style="padding:6px 12px;font-size:12px">👁️ Voir (${fieldCount})</button></td>
             <td>${canEdit ? `<button class="btn btn-success" type="button" data-history-v2-edit="${index}" style="padding:6px 12px;font-size:12px">Modifier</button>` : "—"}</td>
         </tr>`;
@@ -186,12 +103,12 @@ async function loadHistoryV2() {
 
     const { data, error } = await query;
     if (error) {
-        body.innerHTML = `<tr><td colspan="7">❌ Erreur : ${escapeHistoryV2(error.message)}</td></tr>`;
+        body.innerHTML = `<tr><td colspan="7">❌ Erreur : ${escapeHistoryHtml(error.message)}</td></tr>`;
         info.textContent = "Impossible de charger l'historique.";
         return;
     }
 
-    const flattenedRecords = flattenHistoryV2Rows(data || []);
+    const flattenedRecords = flattenHistoryRows(data || []);
     historyV2Records = flattenedRecords;
     if (historyV2Records.length === 0) {
         body.innerHTML = '<tr><td colspan="7">Aucun relevé trouvé.</td></tr>';
@@ -219,7 +136,7 @@ function viewHistoryV2Detail(index, trigger) {
             const displayValue = value === null || value === ""
                 ? "—"
                 : typeof value === "object" ? JSON.stringify(value) : String(value);
-            return `<tr><td><strong>${escapeHistoryV2(historyV2FieldLabel(key))}</strong></td><td>${escapeHistoryV2(displayValue)}</td></tr>`;
+            return `<tr><td><strong>${escapeHistoryHtml(getLabel(key))}</strong></td><td>${escapeHistoryHtml(displayValue)}</td></tr>`;
         }).join("")
         : '<tr><td colspan="2">Aucun champ enregistré.</td></tr>';
 

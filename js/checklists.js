@@ -30,8 +30,8 @@ registerChecklist("water", {
             title: "🔧 Pompes",
             fields: [
                 { id: "pompe_master", type: "radio", label: "Pompe master active", options: ["Pompe 1", "Pompe 2"] },
-                { id: "pressionP1", type: "number", label: "Pression Pompe 1 (bar)", min: 5, max: 6 },
-                { id: "pressionP2", type: "number", label: "Pression Pompe 2 (bar)", min: 5, max: 6 }
+                { id: "pressionP1", type: "number", label: "Consigne pompe master (bar)", min: 5, max: 6 },
+                { id: "pressionP2", type: "number", label: "Consigne pompe secours (bar)", min: 5, max: 6 }
             ]
         },
 
@@ -44,7 +44,7 @@ registerChecklist("water", {
                 { id: "collect_filtree", type: "number", label: "Pression Collecteur Eau Filtrée (bar)", min: 4, max: 5 },
                 { id: "collect_adoucie", type: "number", label: "Pression Collecteur Eau Adoucie (bar)", min: 4, max: 5 },
                 { id: "filtre_inox", type: "number", label: "Pression Filtre Inox (bar)", min: 4, max: 5 },
-                { id: "filtre_pvc2", type: "number", label: "Pression Filtre PVC 2 (bar)", min: 4, max: 5 }
+                { id: "filtre_pvc2", type: "number", label: "Pression collecteur eau de process (bar)", min: 4, max: 5 }
             ]
         },
 
@@ -63,7 +63,8 @@ registerChecklist("water", {
             title: "🧪 Adoucisseur",
             fields: [
                 { id: "adoucisseur_actif", type: "select", label: "Adoucisseur actif", options: ["Adoucisseur 1", "Adoucisseur 2"] },
-                { id: "adoucisseur_regen", type: "number", label: "Compteur de régénération" }
+                { id: "adoucisseur_regen", type: "number", label: "Compteur de régénération" },
+                { id: "adoucisseur_sel", type: "number", label: "Quantité de sel versée", min: 0, night: true }
             ]
         },
 

@@ -1,10 +1,9 @@
 const SupabaseService = (() => {
   function getClient() {
-    if (!window.supabase) {
-      throw new Error("Supabase n'est pas chargé.");
+    if (!window.db) {
+      throw new Error("Supabase n'est pas initialisé.");
     }
-
-    return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    return window.db;
   }
 
   async function fetchTechnicians() {

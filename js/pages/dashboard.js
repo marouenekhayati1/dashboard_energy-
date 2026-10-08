@@ -7,8 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  window.db = db;
+  const db = window.db;
 
   const session = getSession();
   if (!session) {
@@ -17,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   const userName = session.first_name + " " + session.last_name;
-  const userInfo = document.querySelector(".user-info span");
+  const userInfo = document.getElementById("user-display");
   if (userInfo) {
     userInfo.textContent = "👤 " + userName;
   }
@@ -97,7 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function getPosteLabel(poste) {
     if (poste === "matin") return "Matin";
-    if (poste === "apres-midi") return "Jour";
+    if (poste === "apres-midi") return "Après-midi";
     if (poste === "nuit") return "Nuit";
     return "—";
   }
@@ -234,20 +233,6 @@ document.addEventListener("DOMContentLoaded", () => {
     window.scrollTo(0, 0);
   }
 
-  const ANO_LABELS = {
-    water: "💧 Traitement d'eau",
-    surchauffee: "🔥 Eau surchauffée",
-    vapeur: "♨️ Chaudière vapeur",
-    vide: "🔧 Pompe à vide",
-    compresseurs: "💨 Compresseurs",
-    glacee: "❄️ Eau glacée - Trane",
-    chiller: "❄️ Eau glacée - Chiller",
-    york: "❄️ Eau glacée - York",
-    thermo: "🌡️ Thermoventilation",
-    groupes: "⚡ Groupes électrogènes",
-    osmose: "💧 Station d'osmose"
-  };
-
   function openAnomalies() {
     if (!hideAllZones()) return;
     rememberDashboardView("anomalies");
@@ -335,7 +320,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const tech = a.technicians ? a.technicians.first_name + " " + a.technicians.last_name : "—";
       const date = new Date(a.created_at).toLocaleString("fr-FR");
       const resolue = a.resolved_at ? new Date(a.resolved_at).toLocaleString("fr-FR") : "—";
-      const label = a.utility_name ? (ANO_LABELS[a.utility_name] || a.utility_name) : "— Générale —";
+      const label = a.utility_name ? (HISTO_LABELS[a.utility_name] || a.utility_name) : "— Générale —";
 
       const prioColor = a.priority === "Critique" ? "#ef4444" : a.priority === "Urgente" ? "#f59e0b" : "#94a3b8";
       const statusColor = a.status === "ouverte" ? "#ef4444" : a.status === "en cours" ? "#f59e0b" : "#22c55e";
