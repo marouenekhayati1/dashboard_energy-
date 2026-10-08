@@ -440,6 +440,7 @@ textarea:focus {
 
 .dashboard-card {
     background: var(--card);
+    color: var(--card-foreground);
     border: 1px solid var(--border);
     padding: 22px;
     border-radius: var(--radius);
@@ -477,9 +478,9 @@ textarea:focus {
 }
 
 .dashboard-card.is-locked {
-    background: #2a2c33;
-    border-color: #8c5cff;
-    color: var(--foreground);
+    background: var(--card);
+    border-color: var(--primary);
+    color: var(--card-foreground);
 }
 
 .dashboard-card.is-locked p {
@@ -989,4 +990,11 @@ tr:hover td {
         padding: 7px 8px !important;
         font-size: 11px;
     }
+}
+
+
+[data-theme="light"] .dashboard-card,
+[data-theme="light"] .dashboard-card.is-locked {
+    background: var(--card);
+    color: var(--card-foreground);
 }
