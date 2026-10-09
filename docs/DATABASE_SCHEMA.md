@@ -95,3 +95,7 @@ Ne pas supposer que RLS est configurée correctement uniquement parce qu'une pol
 4. Vérifier si le frontend attend le nom ou le type exact de la colonne.
 5. Tester lecture, insertion, modification et droits d'accès concernés.
 6. Mettre à jour ce document après la migration.
+
+## Contrôles de sécurité à faire séparément
+
+La documentation du code ne certifie pas la sécurité de la base distante. En particulier, vérifier les politiques RLS et les droits effectifs pour `technicians`, `measurements` et `anomalies`, ainsi que les fonctions RPC/Edge accessibles aux rôles `anon` et `authenticated`. Le contrôle de session effectué dans le navigateur n'est pas suffisant pour autoriser une opération sensible. Les politiques distantes doivent être inspectées et testées avec les rôles concernés avant toute conclusion.
