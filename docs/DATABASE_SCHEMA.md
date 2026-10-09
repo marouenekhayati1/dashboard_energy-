@@ -51,17 +51,17 @@ Un index unique empêche les doublons de titre pour une même utilité et un mê
 Définie dans la même migration et utilisée par `js/maintenance.js` et `js/comments.js`.
 
 Colonnes confirmées par la migration :
-- `id) : UUID, clé primaire.
-- `task_id) : référence à `maintenance_tasks.id`.
+- `id` : UUID, clé primaire.
+- `task_id` : référence à `maintenance_tasks.id`.
 - `utility_name`, `utility_label`, `equipment_name`, `task_title`
-- `operating_hours) : nombre décimal, nul ou positif.
-- `maintenance_date) : date.
-- `poste) : `matin`, `apres-midi` ou `nuit`.
-- `work_order_number)
-- `comment) : texte, vide par défaut.
-- `technician_id)
-- `technician_name)
-- `created_at)
+- `operating_hours` : nombre décimal, nul ou positif.
+- `maintenance_date` : date.
+- `poste` : `matin`, `apres-midi` ou `nuit`.
+- `work_order_number`
+- `comment` : texte, vide par défaut.
+- `technician_id`
+- `technician_name`
+- `created_at`
 
 Un index facilite la recherche par date d'intervention et date de création.
 
