@@ -32,6 +32,7 @@
         <option value="maintenance">🛠️ Maintenance</option>
         <option value="water-consumption">💧 Consommation d'eau</option>
         <option value="anomalies">⚠️ Anomalies</option>
+        <option value="comments">💬 Commentaires</option>
     </select>
 
     <div class="user-info">
@@ -86,6 +87,10 @@
 
     <div class="menu-item" data-action="open-anomalies">
         ⚠️ Anomalies
+    </div>
+
+    <div class="menu-item" data-action="open-comments">
+        💬 Commentaires
     </div>
 
 </aside>
@@ -426,6 +431,22 @@
     </div>
 </div>
 
+<!-- ZONE COMMENTAIRES -->
+<div id="comments-zone" style="display:none">
+    <div class="page-header">
+        <h1>💬 Suivi des commentaires</h1>
+        <p id="comments-info">Tous les commentaires renseignés dans les check-lists et les interventions de maintenance.</p>
+    </div>
+    <div class="card" style="overflow:hidden">
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Date et heure</th><th>Technicien</th><th>Utilité</th><th>Commentaire</th></tr></thead>
+                <tbody id="comments-body"><tr><td colspan="4">Chargement...</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 <!-- ZONE ANOMALIES -->
 
 <div id="anomalies-zone" style="display:none">
@@ -533,6 +554,7 @@
 <script src="js/history-v2.js"></script>
 <script src="js/maintenance.js"></script>
 <script src="js/water-consumption.js"></script>
+<script src="js/comments.js"></script>
 <script src="js/pages/dashboard.js"></script>
 
 </body>
