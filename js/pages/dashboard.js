@@ -66,6 +66,10 @@ document.addEventListener("DOMContentLoaded", () => {
         element.addEventListener("click", openAnomalies);
       }
 
+      if (action === "open-comments") {
+        element.addEventListener("click", openComments);
+      }
+
       if (action === "save-anomalie") {
         element.addEventListener("click", saveAnomalie);
       }
@@ -137,6 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
     else if (dest === "maintenance") openMaintenance();
     else if (dest === "water-consumption") openWaterConsumption();
     else if (dest === "anomalies") openAnomalies();
+    else if (dest === "comments") openComments();
     else openChecklist(dest);
 
     const mobileNav = document.getElementById("mobile-nav");
@@ -156,6 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const maintenanceZone = document.getElementById("maintenance-zone");
     const waterConsumptionZone = document.getElementById("water-consumption-zone");
     const anomaliesZone = document.getElementById("anomalies-zone");
+    const commentsZone = document.getElementById("comments-zone");
 
     if (dashboard) dashboard.style.display = "none";
     if (checklistZone) checklistZone.style.display = "none";
@@ -164,6 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (maintenanceZone) maintenanceZone.style.display = "none";
     if (waterConsumptionZone) waterConsumptionZone.style.display = "none";
     if (anomaliesZone) anomaliesZone.style.display = "none";
+    if (commentsZone) commentsZone.style.display = "none";
     return true;
   }
 
@@ -248,6 +255,18 @@ document.addEventListener("DOMContentLoaded", () => {
     if (typeof loadAnomalies === "function") {
       loadAnomalies();
     }
+    window.scrollTo(0, 0);
+  }
+
+  function openComments() {
+    if (!hideAllZones()) return;
+    rememberDashboardView("comments");
+    const zone = document.getElementById("comments-zone");
+    if (zone) zone.style.display = "block";
+    document.querySelectorAll(".menu-item").forEach((item) => item.classList.remove("active"));
+    const menuItem = document.querySelector("[data-action='open-comments']");
+    if (menuItem) menuItem.classList.add("active");
+    if (typeof window.loadComments === "function") window.loadComments();
     window.scrollTo(0, 0);
   }
 
@@ -490,6 +509,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.openHistory = openHistory;
   window.openMaintenance = openMaintenance;
   window.openAnomalies = openAnomalies;
+  window.openComments = openComments;
   window.saveAnomalie = saveAnomalie;
   window.loadAnomalies = loadAnomalies;
   window.setStatus = setStatus;
@@ -502,6 +522,7 @@ document.addEventListener("DOMContentLoaded", () => {
   else if (savedView === "maintenance") openMaintenance();
   else if (savedView === "water-consumption") openWaterConsumption();
   else if (savedView === "anomalies") openAnomalies();
+  else if (savedView === "comments") openComments();
   else showDashboard();
   setInterval(updateDateTime, 1000);
 });
