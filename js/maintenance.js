@@ -413,6 +413,110 @@ const MAINTENANCE_UTILITIES = [
     }
   }
 
+  let maintenanceSortKey = "maintenance_date";
+  let maintenanceSortDirection = "desc";
+
+  const maintenanceColumns = [
+    ["maintenance_date", "Date"],
+    ["poste", "Poste"],
+    ["utility_label", "Utilité"],
+    ["equipment_name", "Équipement"],
+    ["task_title", "Tâche"],
+    ["operating_hours", "Compteur d'heures"],
+    ["work_order_number", "N° OT"],
+    ["comment", "Commentaire"],
+    ["technician_name", "Technicien"]
+  ];
+
+  function maintenanceSortValue(log, key) {
+    return log[key] === null || log[key] === undefined ? "" : String(log[key]);
+  }
+
+  function renderMaintenanceLogHeader() {
+    const head = document.getElementById("maintenance-log-head");
+    if (!head) return;
+    const previousFilters = new Map(
+      [...head.querySelectorAll("[data-maintenance-filter]")].map(input => [input.dataset.maintenanceFilter, input.value])
+    );
+    const sortableHeader = maintenanceColumns.map(([key, label]) => {
+      const indicator = maintenanceSortKey === key ? (maintenanceSortDirection === "asc" ? " ▲" : " ▼") : "";
+      return '<th><button class="history-sort" type="button" data-maintenance-sort="' + key + '">' + label + indicator + '</button></th>';
+    }).join("");
+    const actionHeader = '<th>Action</th>';
+    const filterHeader = maintenanceColumns.map(([key, label]) =>
+      '<th><input class="history-column-filter" type="search" data-maintenance-filter="' + key +
+      '" aria-label="Filtrer ' + label + '" placeholder="Filtrer" value="' +
+      escapeMaintenanceHtml(previousFilters.get(key) || "") + '"></th>'
+    ).join("");
+    head.innerHTML = "<tr>" + sortableHeader + actionHeader + "</tr><tr>" + filterHeader + '<th></th></tr>';
+  }
+
+  function renderMaintenanceLogTable() {
+    const body = document.getElementById("maintenance-log-body");
+    const info = document.getElementById("maintenance-info");
+    if (!body) return;
+
+    renderMaintenanceLogHeader();
+    const filters = [...document.querySelectorAll("[data-maintenance-filter]")]
+      .map(input => [input.dataset.maintenanceFilter, input.value.trim()])
+      .filter(([, value]) => value);
+
+    const visibleLogs = maintenanceLogs.filter(log => filters.every(([key, filter]) => {
+      let value = maintenanceSortValue(log, key);
+      if (key === "maintenance_date" && value) {
+        const date = new Date(value + "T12:00:00");
+        if (!Number.isNaN(date.getTime())) value = date.toLocaleDateString("fr-FR");
+      }
+      if (key === "operating_hours" && value) value = Number(value).toLocaleString("fr-FR") + " h";
+      if (key === "poste") value = posteLabel(value);
+      return value.toLocaleLowerCase("fr-FR").includes(filter.toLocaleLowerCase("fr-FR"));
+    }));
+
+    visibleLogs.sort((a, b) => {
+      const left = maintenanceSortValue(a, maintenanceSortKey);
+      const right = maintenanceSortValue(b, maintenanceSortKey);
+      let comparison;
+      if (maintenanceSortKey === "maintenance_date") {
+        comparison = new Date(left || 0).getTime() - new Date(right || 0).getTime();
+      } else if (maintenanceSortKey === "operating_hours") {
+        comparison = (Number(left) || 0) - (Number(right) || 0);
+      } else {
+        const leftValue = maintenanceSortKey === "poste" ? posteLabel(left) : left;
+        const rightValue = maintenanceSortKey === "poste" ? posteLabel(right) : right;
+        comparison = leftValue.localeCompare(rightValue, "fr", { numeric: true, sensitivity: "base" });
+      }
+      return maintenanceSortDirection === "asc" ? comparison : -comparison;
+    });
+
+    const session = getSession();
+    if (!visibleLogs.length) {
+      body.innerHTML = '<tr><td colspan="10">Aucune intervention ne correspond aux filtres.</td></tr>';
+    } else {
+      body.innerHTML = visibleLogs.map(log => {
+        const date = log.maintenance_date
+          ? new Date(log.maintenance_date + "T12:00:00").toLocaleDateString("fr-FR")
+          : "—";
+        const hours = log.operating_hours === null || log.operating_hours === undefined
+          ? "—"
+          : Number(log.operating_hours).toLocaleString("fr-FR") + " h";
+        const canEdit = session?.role === "admin" || String(session?.id) === String(log.technician_id);
+        return '<tr>' +
+          '<td style="white-space:nowrap">' + escapeMaintenanceHtml(date) + '</td>' +
+          '<td>' + escapeMaintenanceHtml(posteLabel(log.poste)) + '</td>' +
+          '<td>' + escapeMaintenanceHtml(log.utility_label || log.utility_name || "—") + '</td>' +
+          '<td>' + escapeMaintenanceHtml(log.equipment_name || "—") + '</td>' +
+          '<td>' + escapeMaintenanceHtml(log.task_title || "—") + '</td>' +
+          '<td>' + escapeMaintenanceHtml(hours) + '</td>' +
+          '<td>' + escapeMaintenanceHtml(log.work_order_number || "—") + '</td>' +
+          '<td style="white-space:pre-wrap">' + escapeMaintenanceHtml(log.comment || "—") + '</td>' +
+          '<td>' + escapeMaintenanceHtml(log.technician_name || "—") + '</td>' +
+          '<td>' + (canEdit ? '<button class="btn btn-success" type="button" data-maintenance-edit="' + escapeMaintenanceHtml(log.id) + '">Modifier</button>' : "—") + '</td>' +
+        '</tr>';
+      }).join("");
+    }
+    if (info) info.textContent = visibleLogs.length + " intervention(s) affichée(s) sur " + maintenanceLogs.length;
+  }
+
   async function loadMaintenanceLogs() {
     const body = document.getElementById("maintenance-log-body");
     const info = document.getElementById("maintenance-info");
@@ -438,25 +542,7 @@ const MAINTENANCE_UTILITIES = [
     }
 
     maintenanceLogs = data;
-    const session = getSession();
-    body.innerHTML = data.map((log) => {
-      const date = new Date(`${log.maintenance_date}T12:00:00`).toLocaleDateString("fr-FR");
-      const hours = log.operating_hours === null || log.operating_hours === undefined ? "—" : `${Number(log.operating_hours).toLocaleString("fr-FR")} h`;
-      const canEdit = session?.role === "admin" || String(session?.id) === String(log.technician_id);
-      return `<tr>
-        <td style="white-space:nowrap">${escapeMaintenanceHtml(date)}</td>
-        <td>${escapeMaintenanceHtml(posteLabel(log.poste))}</td>
-        <td>${escapeMaintenanceHtml(log.utility_label)}</td>
-        <td>${escapeMaintenanceHtml(log.equipment_name)}</td>
-        <td>${escapeMaintenanceHtml(log.task_title)}</td>
-        <td>${escapeMaintenanceHtml(hours)}</td>
-        <td>${escapeMaintenanceHtml(log.work_order_number || "—")}</td>
-        <td>${escapeMaintenanceHtml(log.comment || "—")}</td>
-        <td>${escapeMaintenanceHtml(log.technician_name)}</td>
-        <td>${canEdit ? `<button class="btn btn-success" type="button" data-maintenance-edit="${escapeMaintenanceHtml(log.id)}">Modifier</button>` : "—"}</td>
-      </tr>`;
-    }).join("");
-    if (info) info.textContent = `${data.length} intervention(s) récente(s)`;
+    renderMaintenanceLogTable();
   }
 
   async function loadMaintenance() {
@@ -534,6 +620,22 @@ const MAINTENANCE_UTILITIES = [
     });
     saveButton.addEventListener("click", saveMaintenanceLog);
     cancelEditButton.addEventListener("click", cancelMaintenanceEdit);
+    document.addEventListener("click", event => {
+      const button = event.target.closest("[data-maintenance-sort]");
+      if (!button) return;
+      const key = button.dataset.maintenanceSort;
+      if (maintenanceSortKey === key) {
+        maintenanceSortDirection = maintenanceSortDirection === "asc" ? "desc" : "asc";
+      } else {
+        maintenanceSortKey = key;
+        maintenanceSortDirection = key === "maintenance_date" ? "desc" : "asc";
+      }
+      renderMaintenanceLogTable();
+    });
+    document.addEventListener("input", event => {
+      if (event.target.matches("[data-maintenance-filter]")) renderMaintenanceLogTable();
+    });
+
     document.getElementById("maintenance-log-body").addEventListener("click", (event) => {
       const editButton = event.target.closest("[data-maintenance-edit]");
       if (editButton) editMaintenanceLog(editButton.dataset.maintenanceEdit);
