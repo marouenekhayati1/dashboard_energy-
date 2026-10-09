@@ -2,6 +2,10 @@
 
 Application web de suivi des utilités industrielles : check-lists de poste, relevés, historique, interventions de maintenance et commentaires.
 
+## Instructions pour les assistants de code
+
+Lire [AGENTS.md](AGENTS.md) avant toute modification assistée par IA. Le processus recommandé est décrit dans [docs/AI_WORKFLOW.md](docs/AI_WORKFLOW.md).
+
 ## Documentation du projet
 
 - [Contexte et architecture](docs/PROJECT_CONTEXT.md)
