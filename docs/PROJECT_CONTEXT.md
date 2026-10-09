@@ -66,3 +66,7 @@ Conteneur principal de l'application. Il contient la navigation et les zones des
 - Les vues historiques peuvent se chevaucher fonctionnellement : comprendre les deux versions avant une refactorisation.
 - Le schéma distant Supabase peut contenir des objets qui ne sont pas décrits par les migrations présentes dans ce dépôt. Vérifier le schéma distant avant de conclure qu'une table ou une colonne n'existe pas.
 - Après chaque changement de tableau, vérifier les en-têtes, les filtres, le tri, les états vides et les actions par ligne.
+
+## Authentification et sécurité — point à vérifier
+
+Le frontend utilise `js/auth.js` pour conserver une session applicative dans `localStorage`, et `js/pages/dashboard.js` redirige vers la connexion si aucune session n'est présente. Ces contrôles côté navigateur améliorent le parcours utilisateur, mais ne constituent pas à eux seuls une frontière de sécurité : les données et opérations sensibles doivent être protégées par des politiques RLS correctes et des fonctions serveur qui valident l'identité et les autorisations. La configuration réelle des politiques du projet Supabase distant n'a pas été auditée dans le cadre de cette documentation.
