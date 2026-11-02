@@ -31,6 +31,7 @@
         <option value="history-v2">📋 Historique V2</option>
         <option value="maintenance">🛠️ Maintenance</option>
         <option value="water-consumption">💧 Consommation d'eau</option>
+        <option value="surchauffee-consumption">🔥 Consommation eau surchauffée</option>
         <option value="anomalies">⚠️ Anomalies</option>
         <option value="comments">💬 Commentaires</option>
     </select>
@@ -83,6 +84,10 @@
 
     <div class="menu-item" data-action="open-water-consumption">
         💧 Consommation d'eau
+    </div>
+
+    <div class="menu-item" data-action="open-surchauffee-consumption">
+        🔥 Consommation eau surchauffée
     </div>
 
     <div class="menu-item" data-action="open-anomalies">
@@ -431,6 +436,37 @@
     </div>
 </div>
 
+<!-- ZONE CONSOMMATION EAU SURCHAUFFÉE -->
+
+<div id="surchauffee-consumption-zone" style="display:none">
+    <div class="page-header">
+        <h1>🔥 Consommation eau surchauffée</h1>
+        <p id="surchauffee-consumption-info">Consommation calculée par différence entre deux index successifs, pour chaque poste.</p>
+    </div>
+
+    <div class="controls" style="grid-template-columns:1fr 1fr">
+        <div class="control-card">
+            <label for="surchauffee-consumption-from">Du</label>
+            <input id="surchauffee-consumption-from" type="date">
+        </div>
+        <div class="control-card">
+            <label for="surchauffee-consumption-to">Au</label>
+            <input id="surchauffee-consumption-to" type="date">
+        </div>
+    </div>
+
+    <div class="card" style="overflow:hidden">
+        <div class="table-wrap">
+            <table class="water-consumption-table">
+                <thead id="surchauffee-consumption-head"></thead>
+                <tbody id="surchauffee-consumption-body">
+                    <tr><td colspan="7">Chargement des relevés...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 <!-- ZONE COMMENTAIRES -->
 <div id="comments-zone" style="display:none">
     <div class="page-header">
@@ -554,6 +590,7 @@
 <script src="js/history-v2.js"></script>
 <script src="js/maintenance.js"></script>
 <script src="js/water-consumption.js"></script>
+<script src="js/surchauffee-consumption.js"></script>
 <script src="js/comments.js"></script>
 <script src="js/pages/dashboard.js"></script>
 
