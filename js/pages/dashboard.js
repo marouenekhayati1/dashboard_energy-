@@ -62,6 +62,10 @@ document.addEventListener("DOMContentLoaded", () => {
         element.addEventListener("click", openWaterConsumption);
       }
 
+      if (action === "open-surchauffee-consumption") {
+        element.addEventListener("click", openSurchauffeeConsumption);
+      }
+
       if (action === "open-anomalies") {
         element.addEventListener("click", openAnomalies);
       }
@@ -140,6 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
     else if (dest === "history-v2") openHistoryV2();
     else if (dest === "maintenance") openMaintenance();
     else if (dest === "water-consumption") openWaterConsumption();
+    else if (dest === "surchauffee-consumption") openSurchauffeeConsumption();
     else if (dest === "anomalies") openAnomalies();
     else if (dest === "comments") openComments();
     else openChecklist(dest);
@@ -160,6 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const historyV2Zone = document.getElementById("history-v2-zone");
     const maintenanceZone = document.getElementById("maintenance-zone");
     const waterConsumptionZone = document.getElementById("water-consumption-zone");
+    const surchauffeeConsumptionZone = document.getElementById("surchauffee-consumption-zone");
     const anomaliesZone = document.getElementById("anomalies-zone");
     const commentsZone = document.getElementById("comments-zone");
 
@@ -169,6 +175,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (historyV2Zone) historyV2Zone.style.display = "none";
     if (maintenanceZone) maintenanceZone.style.display = "none";
     if (waterConsumptionZone) waterConsumptionZone.style.display = "none";
+    if (surchauffeeConsumptionZone) surchauffeeConsumptionZone.style.display = "none";
     if (anomaliesZone) anomaliesZone.style.display = "none";
     if (commentsZone) commentsZone.style.display = "none";
     return true;
@@ -236,6 +243,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (typeof loadWaterConsumption === "function") {
       loadWaterConsumption(true);
+    }
+    window.scrollTo(0, 0);
+  }
+
+  function openSurchauffeeConsumption() {
+    if (!hideAllZones()) return;
+    rememberDashboardView("surchauffee-consumption");
+    const zone = document.getElementById("surchauffee-consumption-zone");
+    if (zone) zone.style.display = "block";
+
+    document.querySelectorAll(".menu-item").forEach((item) => item.classList.remove("active"));
+    const menuItem = document.querySelector("[data-action='open-surchauffee-consumption']");
+    if (menuItem) menuItem.classList.add("active");
+
+    if (typeof loadSurchauffeeConsumption === "function") {
+      loadSurchauffeeConsumption(true);
     }
     window.scrollTo(0, 0);
   }
@@ -521,6 +544,7 @@ document.addEventListener("DOMContentLoaded", () => {
   else if (savedView === "history-v2") openHistoryV2();
   else if (savedView === "maintenance") openMaintenance();
   else if (savedView === "water-consumption") openWaterConsumption();
+  else if (savedView === "surchauffee-consumption") openSurchauffeeConsumption();
   else if (savedView === "anomalies") openAnomalies();
   else if (savedView === "comments") openComments();
   else showDashboard();
