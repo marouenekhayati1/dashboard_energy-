@@ -998,3 +998,53 @@ tr:hover td {
     background: var(--card);
     color: var(--card-foreground);
 }
+
+
+/* Page consommation eau surchauffée : adaptation mobile */
+.surchauffee-consumption-table {
+    min-width: 760px;
+    table-layout: auto;
+}
+.surchauffee-consumption-table th,
+.surchauffee-consumption-table td {
+    min-width: 110px;
+    text-align: center;
+}
+.surchauffee-consumption-table th:first-child,
+.surchauffee-consumption-table td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    min-width: 95px;
+    background: var(--card);
+}
+.surchauffee-consumption-table th:nth-child(2),
+.surchauffee-consumption-table td:nth-child(2) {
+    min-width: 90px;
+}
+@media (max-width: 600px) {
+    #surchauffee-consumption-zone .controls {
+        grid-template-columns: 1fr !important;
+        gap: 10px;
+    }
+    #surchauffee-consumption-zone .control-card {
+        width: 100%;
+        min-width: 0;
+    }
+    #surchauffee-consumption-zone .control-card input {
+        width: 100%;
+        box-sizing: border-box;
+    }
+    #surchauffee-consumption-zone .card {
+        padding: 10px;
+        margin-left: 0;
+        margin-right: 0;
+    }
+    #surchauffee-consumption-zone .table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .surchauffee-consumption-table {
+        min-width: 700px;
+    }
+}
