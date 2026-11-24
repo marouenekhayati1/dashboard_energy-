@@ -91,6 +91,7 @@ registerChecklist("surchauffee", {
             fields: [
                 { id: "cpt_osmosee", type: "number", label: "Compteur Eau Osmosée" },
                 { id: "cpt_adoucie", type: "number", label: "Compteur Eau Adoucie" },
+                { id: "cpt_gaz", type: "number", label: "Index compteur gaz commun aux deux chaudières (m³)" },
                 { id: "qt_mf788", type: "number", label: "Quantité MF788 versée (confirmation)", hint: "Calcul auto : 0,6 L par m³ consommé" },
                 { id: "qt_adg5150", type: "number", label: "Quantité ADG5150 versée (confirmation)", hint: "Calcul auto : 0,5 L par m³ consommé" },
                 { id: "dosage_info", type: "text", label: "💡 Dosage suggéré (automatique)" }
