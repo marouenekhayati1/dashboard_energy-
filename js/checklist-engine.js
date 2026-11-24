@@ -763,8 +763,7 @@ async function getPreviousCounterValue(utilityName, fieldId, currentRecordId = n
     let query = db.from("measurements")
         .select("data")
         .eq("utility_name", utilityName)
-        .order("recorded_at", { ascending: false })
-        .limit(50);
+        .order("recorded_at", { ascending: false });
 
     if (currentRecordId) {
         query = query.neq("id", currentRecordId);
