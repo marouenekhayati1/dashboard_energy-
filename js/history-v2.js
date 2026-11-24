@@ -108,7 +108,8 @@ async function loadHistoryV2() {
         return;
     }
 
-    const flattenedRecords = flattenHistoryRows(data || []);
+    const recordsWithGasConsumption = await attachVapeurGasConsumption(data || []);
+    const flattenedRecords = flattenHistoryRows(recordsWithGasConsumption);
     historyV2Records = flattenedRecords;
     if (historyV2Records.length === 0) {
         body.innerHTML = '<tr><td colspan="7">Aucun relevé trouvé.</td></tr>';
