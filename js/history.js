@@ -18,6 +18,7 @@ const HISTO_LABELS = {
 
 // Libellés humains des champs (récupérés depuis les check-lists enregistrées)
 function getLabel(id) {
+    if (id === "conso_gaz") return "Consommation gaz calculée (m³)";
     for (const cid in CHECKLISTS) {
         for (const section of CHECKLISTS[cid].sections) {
             const f = section.fields.find(f => f.id === id);
@@ -77,6 +78,53 @@ function flattenHistoryRows(data) {
     }
 
     return rows;
+}
+
+
+/* Calcule la consommation de gaz à partir de chaque index nocturne enregistré.
+   La recherche porte sur tout l'historique vapeur pour gérer les nuits oubliées
+   et les filtres/limites d'affichage de l'historique. */
+async function attachVapeurGasConsumption(records) {
+    if (!Array.isArray(records) || !records.length) return records || [];
+
+    const { data, error } = await db.from("measurements")
+        .select("id, recorded_at, data")
+        .eq("utility_name", "vapeur")
+        .order("recorded_at", { ascending: true });
+
+    if (error) {
+        console.error("Calcul consommation gaz impossible :", error.message);
+        return records;
+    }
+
+    const gasByRecordId = new Map();
+    let previousIndex = null;
+
+    for (const row of data || []) {
+        const rawIndex = row.data?.cpt_gaz;
+        if (rawIndex === undefined || rawIndex === null || rawIndex === "") continue;
+
+        const currentIndex = Number(rawIndex);
+        if (!Number.isFinite(currentIndex)) continue;
+
+        const consumption = previousIndex === null
+            ? null
+            : currentIndex >= previousIndex ? currentIndex - previousIndex : null;
+
+        gasByRecordId.set(row.id, consumption);
+        previousIndex = currentIndex;
+    }
+
+    return records.map((record) => {
+        if (record.utility_name !== "vapeur" || !gasByRecordId.has(record.id)) return record;
+        return {
+            ...record,
+            data: {
+                ...(record.data || {}),
+                conso_gaz: gasByRecordId.get(record.id) ?? ""
+            }
+        };
+    });
 }
 
 function escapeHistoryHtml(value) {
@@ -267,7 +315,8 @@ async function loadHistory() {
         return;
     }
 
-    historyRows = flattenHistoryRows(data);
+    const recordsWithGasConsumption = await attachVapeurGasConsumption(data);
+    historyRows = flattenHistoryRows(recordsWithGasConsumption);
     historyColumns = [];
     for (const r of historyRows) {
         if (!r.data) continue;
