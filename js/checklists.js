@@ -146,9 +146,9 @@ registerChecklist("vapeur", {
             title: "📊 Compteurs et dosage (nuit)",
             night: true,
             fields: [
+                { id: "cpt_gaz", type: "number", label: "Compteur gaz" },
                 { id: "cpt_osmosee", type: "number", label: "Compteur Eau Osmosée" },
                 { id: "cpt_adoucie", type: "number", label: "Compteur Eau Adoucie" },
-                { id: "cpt_gaz", type: "number", label: "Compteur gaz" },
                 { id: "niveau_reservoir", type: "number", label: "Niveau du réservoir de dosage" },
                 { id: "qt_produit", type: "number", label: "Quantité de produit versée", hint: "Calcul auto : (150 − Niveau) × 0,047" },
                 { id: "dosage_info", type: "text", label: "💡 Quantité suggérée (automatique)" }
